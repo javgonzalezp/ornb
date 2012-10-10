@@ -638,7 +638,7 @@ public class ORNB
    * @param argv the options
    */
   public static void main(String[] argv) {
-	  runClassifier(new ORNB(), argv);
+	  runClassifier(new NaiveBayes(), argv);
   }
 }
 
