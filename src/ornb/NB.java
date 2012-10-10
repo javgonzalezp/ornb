@@ -20,10 +20,14 @@ package ornb;
  *
  */
 
+import java.io.File;
+import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Vector;
 
 import weka.classifiers.AbstractClassifier;
+import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.core.Attribute;
@@ -34,9 +38,12 @@ import weka.core.Instances;
 import weka.core.Option;
 import weka.core.OptionHandler;
 import weka.core.RevisionUtils;
+import weka.core.SparseInstance;
 import weka.core.TechnicalInformation;
 import weka.core.TechnicalInformation.Field;
 import weka.core.TechnicalInformation.Type;
+import weka.core.converters.ArffLoader;
+import weka.core.converters.ConverterUtils.DataSource;
 import weka.core.TechnicalInformationHandler;
 import weka.core.Utils;
 import weka.core.WeightedInstancesHandler;
@@ -44,6 +51,7 @@ import weka.estimators.DiscreteEstimator;
 import weka.estimators.Estimator;
 import weka.estimators.KernelEstimator;
 import weka.estimators.NormalEstimator;
+import weka.filters.supervised.instance.Resample;
 
 /**
  <!-- globalinfo-start -->
@@ -135,6 +143,8 @@ implements OptionHandler, WeightedInstancesHandler,
   protected weka.filters.supervised.attribute.Discretize m_Disc = null;
 
   protected boolean m_displayModelInOldFormat = false;
+  
+  ArrayList<double[]> lista = new ArrayList<double[]>();
 
   /**
    * Returns a string describing this classifier
@@ -297,6 +307,7 @@ implements OptionHandler, WeightedInstancesHandler,
       Instance instance = 
 	(Instance) enumInsts.nextElement();
       updateClassifier(instance);
+      //lista.add(distributionForInstance(instance));
     }
 
     // Save space
@@ -934,6 +945,20 @@ implements OptionHandler, WeightedInstancesHandler,
   public String getRevision() {
     return RevisionUtils.extract("$Revision: 8034 $");
   }
+  
+  public void Predictions(Classifier nb, Instances instances) throws Exception{
+	DataSource source = new DataSource(instances);
+	Instances 	test;
+	Instance 	inst;
+	
+	source.reset();
+	test = source.getStructure();
+	while (source.hasMoreElements(test)) {
+	  inst = source.nextElement(test);
+	  double[] d = nb.distributionForInstance(inst);
+	  lista.add(d);
+	}
+  }
 
   /**
    * Main method for testing this class.
@@ -944,10 +969,44 @@ implements OptionHandler, WeightedInstancesHandler,
 	  NB nb = new NB();
     //runClassifier(nb, argv);
     try {
-    	String s = Evaluation.evaluateModel(nb, argv);
+    	DataSource loader;
+    	Instances data;
+    	SparseInstance i=new SparseInstance(3);
+    	
+		loader = new DataSource("iris.arff");
+		data = loader.getDataSet();
+		
+   		if (data.classIndex() == -1)
+   			   data.setClassIndex(data.numAttributes()-1);
+   		i.setDataset(data);
+		
+   	    Resample rs = new Resample();
+   	    
+   	    rs.setSampleSizePercent(50.0);
+   	    rs.setInputFormat(data);
+   	    rs.setRandomSeed(10);
+   	    
+   	    data = Resample.useFilter(data, rs);
+   		
+   		nb.buildClassifier(data);
+   		nb.Predictions(nb, data);
     	//Aquí tengo que hacer el método o encontrar la manera para retornar las predicciones
     	//de cada uno de los elementos para ese naive bayes
-        System.out.println(s);
+   		
+   		System.out.println(data.toString());
+   		for(int j=0; j<nb.lista.size(); j++){
+   			double[] aux = nb.lista.get(j);
+   			if(aux[0]>aux[1] && aux[0]>aux[2]){
+   				System.out.println(aux[0] + " 1");
+   			}
+   			else if(aux[1]>aux[0] && aux[1]>aux[2]){
+   				System.out.println(aux[1]+" 2");
+   			}
+   			else if(aux[2]>aux[1] && aux[0]<aux[2]){
+   				System.out.println(aux[2]+" 3");
+   			}
+   		}
+        //System.out.println(Evaluation.evaluateModel(nb, argv));
       }
       catch (Exception e) {
         if (    ((e.getMessage() != null) && (e.getMessage().indexOf("General options") == -1))
