@@ -1,9 +1,11 @@
 package ornb;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Vector;
 
 import weka.classifiers.AbstractClassifier;
+import weka.classifiers.Classifier;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.meta.Bagging;
 import weka.classifiers.trees.RandomForest;
@@ -15,9 +17,11 @@ import weka.core.Option;
 import weka.core.OptionHandler;
 import weka.core.Randomizable;
 import weka.core.RevisionUtils;
+import weka.core.SparseInstance;
 import weka.core.TechnicalInformation;
 import weka.core.TechnicalInformation.Field;
 import weka.core.TechnicalInformation.Type;
+import weka.core.converters.ConverterUtils.DataSource;
 import weka.core.TechnicalInformationHandler;
 import weka.core.Utils;
 import weka.core.WeightedInstancesHandler;
@@ -114,6 +118,8 @@ public class ORNB
   
   /** Print the individual trees in the output */
   protected boolean m_printTrees = false;
+  
+  ArrayList<double[]> lista = new ArrayList<double[]>();
 
   /**
    * Returns a string describing classifier
@@ -578,7 +584,7 @@ public class ORNB
 
     // set up the bagger and build the forest
     m_bagger.setClassifier(nb);
-    m_bagger.setSeed(m_randomSeed);
+    m_bagger.setSeed(100);
     m_bagger.setNumIterations(m_numTrees);
     m_bagger.setCalcOutOfBag(true);
     m_bagger.setNumExecutionSlots(m_numExecutionSlots);
@@ -631,6 +637,20 @@ public class ORNB
   public String getRevision() {
     return RevisionUtils.extract("$Revision: 8892 $");
   }
+  
+  public void Predictions(Classifier nb, Instances instances) throws Exception{
+		DataSource source = new DataSource(instances);
+		Instances 	test;
+		Instance 	inst;
+		
+		source.reset();
+		test = source.getStructure();
+		while (source.hasMoreElements(test)) {
+		  inst = source.nextElement(test);
+		  double[] d = nb.distributionForInstance(inst);
+		  lista.add(d);
+		}
+	  }
 
   /**
    * Main method for this class.
@@ -638,7 +658,46 @@ public class ORNB
    * @param argv the options
    */
   public static void main(String[] argv) {
-	  runClassifier(new NaiveBayes(), argv);
+	  //runClassifier(new NaiveBayes(), argv);
+	  ORNB ornb = new ORNB();
+	    try {
+	    	DataSource loader;
+	    	Instances data;
+	    	SparseInstance i=new SparseInstance(3);
+	    	
+			loader = new DataSource("iris.arff");
+			data = loader.getDataSet();
+			
+	   		if (data.classIndex() == -1)
+	   			   data.setClassIndex(data.numAttributes()-1);
+	   		i.setDataset(data);
+			
+	   	  //  Resample rs = new Resample();
+	   	    
+	   	    //rs.setSampleSizePercent(50.0);
+	   	    //rs.setInputFormat(data);
+	   	    //rs.setRandomSeed(10);
+	   	    
+	   	    //data = Resample.useFilter(data, rs);
+	   		
+	   		ornb.buildClassifier(data);
+	   		ornb.Predictions(ornb, data);
+	    	//Aquí tengo que hacer el método o encontrar la manera para retornar las predicciones
+	    	//de cada uno de los elementos para ese naive bayes
+	   		
+	   		//System.out.println(data.toString());
+	   		for(int j=0; j<ornb.lista.size(); j++){
+	   			System.out.println(Utils.maxIndex(ornb.lista.get(j)));
+	   		}
+	        //System.out.println(Evaluation.evaluateModel(nb, argv));
+	      }
+	      catch (Exception e) {
+	        if (    ((e.getMessage() != null) && (e.getMessage().indexOf("General options") == -1))
+	            || (e.getMessage() == null) )
+	          e.printStackTrace();
+	        else
+	          System.err.println(e.getMessage());
+	      }
   }
 }
 
