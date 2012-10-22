@@ -2,6 +2,7 @@ package ornb;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Random;
 import java.util.Vector;
 
 import weka.classifiers.AbstractClassifier;
@@ -119,7 +120,7 @@ public class ORNB
   /** Print the individual trees in the output */
   protected boolean m_printTrees = false;
   
-  ArrayList<double[]> lista = new ArrayList<double[]>();
+  static ArrayList<double[]> lista = new ArrayList<double[]>();
 
   /**
    * Returns a string describing classifier
@@ -565,17 +566,6 @@ public class ORNB
     //Para el caso de NB cada hoja del árbol corresponde a un clasificador Naive Bayes
     NaiveBayes nb = new NaiveBayes();
     
-    Resample rs = new Resample();
-    
-    rs.setSampleSizePercent(50.0);
-    rs.setInputFormat(data);
-    
-    data = Resample.useFilter(data, rs);
-    
-    
-    //System.out.println("-------------");
-    //System.out.println(data.numAttributes());
-
     // set up the random tree options
     m_KValue = m_numFeatures;
     if (m_KValue < 1) m_KValue = (int) Utils.log2(data.numAttributes())+1;
@@ -650,15 +640,15 @@ public class ORNB
 		  double[] d = nb.distributionForInstance(inst);
 		  lista.add(d);
 		}
-	  }
-
+  }
+  
   /**
    * Main method for this class.
    *
    * @param argv the options
    */
   public static void main(String[] argv) {
-	  //runClassifier(new NaiveBayes(), argv);
+	  //runClassifier(new ORNB(), argv);
 	  ORNB ornb = new ORNB();
 	    try {
 	    	DataSource loader;
@@ -672,23 +662,31 @@ public class ORNB
 	   			   data.setClassIndex(data.numAttributes()-1);
 	   		i.setDataset(data);
 			
-	   	  //  Resample rs = new Resample();
+	   	    Resample rs = new Resample();
+	   	    Random r = new Random();
+   			double a = r.nextDouble();
 	   	    
+   			rs.setSampleSizePercent(a*100);
 	   	    //rs.setSampleSizePercent(50.0);
-	   	    //rs.setInputFormat(data);
-	   	    //rs.setRandomSeed(10);
+	   	    rs.setInputFormat(data);
+	   	    rs.setRandomSeed(10);
 	   	    
-	   	    //data = Resample.useFilter(data, rs);
-	   		
-	   		ornb.buildClassifier(data);
+	   	    ornb.setPrintTrees(true);
+	   	    ornb.buildClassifier(data);
+	   		data = Resample.useFilter(data, rs);
 	   		ornb.Predictions(ornb, data);
+	   		System.out.println(data.toString());
+	   		
+			for(int j=0; j<lista.size(); j++){
+				//System.out.println(Utils.maxIndex(lista.get(j)));
+				double[] aux = lista.get(j);
+				System.out.println(Utils.maxIndex(aux));
+				
+			}
 	    	//Aquí tengo que hacer el método o encontrar la manera para retornar las predicciones
 	    	//de cada uno de los elementos para ese naive bayes
 	   		
-	   		//System.out.println(data.toString());
-	   		for(int j=0; j<ornb.lista.size(); j++){
-	   			System.out.println(Utils.maxIndex(ornb.lista.get(j)));
-	   		}
+	   		;
 	        //System.out.println(Evaluation.evaluateModel(nb, argv));
 	      }
 	      catch (Exception e) {
