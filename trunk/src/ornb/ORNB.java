@@ -648,7 +648,6 @@ public class ORNB
    * @param argv the options
    */
   public static void main(String[] argv) {
-	  //runClassifier(new ORNB(), argv);
 	  ORNB ornb = new ORNB();
 	    try {
 	    	DataSource loader;
@@ -667,7 +666,6 @@ public class ORNB
    			double a = r.nextDouble();
 	   	    
    			rs.setSampleSizePercent(a*100);
-	   	    //rs.setSampleSizePercent(50.0);
 	   	    rs.setInputFormat(data);
 	   	    rs.setRandomSeed(10);
 	   	    
@@ -677,17 +675,8 @@ public class ORNB
 	   		ornb.Predictions(ornb, data);
 	   		System.out.println(data.toString());
 	   		
-			for(int j=0; j<lista.size(); j++){
-				//System.out.println(Utils.maxIndex(lista.get(j)));
-				double[] aux = lista.get(j);
-				System.out.println(Utils.maxIndex(aux));
-				
-			}
-	    	//Aquí tengo que hacer el método o encontrar la manera para retornar las predicciones
-	    	//de cada uno de los elementos para ese naive bayes
-	   		
-	   		;
-	        //System.out.println(Evaluation.evaluateModel(nb, argv));
+			for(int j=0; j<lista.size(); j++)
+				System.out.println(Utils.maxIndex(lista.get(j)));
 	      }
 	      catch (Exception e) {
 	        if (    ((e.getMessage() != null) && (e.getMessage().indexOf("General options") == -1))
