@@ -4,8 +4,8 @@ public class Point {
 	float bin;
 	int frequency;
 	
-	public Point(float bin, int frequency){
-		this.bin = bin;
+	public Point(double d, int frequency){
+		this.bin = (float) d;
 		this.frequency = frequency;
 	}
 	
