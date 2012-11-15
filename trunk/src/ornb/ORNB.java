@@ -19,6 +19,7 @@ import weka.core.OptionHandler;
 import weka.core.Randomizable;
 import weka.core.RevisionUtils;
 import weka.core.SparseInstance;
+import weka.core.Summarizable;
 import weka.core.TechnicalInformation;
 import weka.core.TechnicalInformation.Field;
 import weka.core.TechnicalInformation.Type;
@@ -685,6 +686,24 @@ public class ORNB
 	        else
 	          System.err.println(e.getMessage());
 	      }
+	      Histogram h = new Histogram(5);
+	      h.updateHistogram(23.0);
+	      h.updateHistogram(19);
+	      h.updateHistogram(10);
+	      h.updateHistogram(16);
+	      h.updateHistogram(36);
+	      h.updateHistogram(2);
+	      h.updateHistogram(9);
+	      h.updateHistogram(32);
+	      h.updateHistogram(30);
+	      h.updateHistogram(45);
+	      
+	      h.printHistogram();
+	      double a=h.getMean();
+	      double b=h.getStandarDeviation();
+	      System.out.println("Mean: "+h.getMean()+" Standar Deviation: "+h.getStandarDeviation());
+	      System.out.println("Puntos menores que 15: " + h.sumProcedure(15));
+	      
   }
 }
 
