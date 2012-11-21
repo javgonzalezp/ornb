@@ -11,6 +11,7 @@ import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.meta.Bagging;
 import weka.classifiers.trees.RandomForest;
 import weka.core.AdditionalMeasureProducer;
+import weka.core.Attribute;
 import weka.core.Capabilities;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -647,8 +648,27 @@ public class ORNB
    * Main method for this class.
    *
    * @param argv the options
+ * @throws Exception 
    */
-  public static void main(String[] argv) {
+  public static void main(String[] argv) throws Exception {
+		DataSource loader;
+		Instances data;
+		SparseInstance i=new SparseInstance(3);
+		
+		loader = new DataSource("iris.arff");
+		data = loader.getDataSet();
+		Forest f = new Forest(10);
+		f.initializeForest();
+		
+	    Enumeration enu = data.enumerateInstances();
+	    while (enu.hasMoreElements()) {
+	    	 Instance instance = (Instance) enu.nextElement();
+	    	 f.addElement(instance.toString());
+	    	 //System.out.println(instance.toString());
+	    }
+	    
+  
+	  /*NaiveBayes nb = new NaiveBayes();
 	  ORNB ornb = new ORNB();
 	    try {
 	    	DataSource loader;
@@ -661,7 +681,9 @@ public class ORNB
 	   		if (data.classIndex() == -1)
 	   			   data.setClassIndex(data.numAttributes()-1);
 	   		i.setDataset(data);
-			
+
+	   		nb.buildClassifier(data);
+	   		
 	   	    Resample rs = new Resample();
 	   	    Random r = new Random();
    			double a = r.nextDouble();
@@ -703,7 +725,7 @@ public class ORNB
 	      double b=h.getStandarDeviation();
 	      System.out.println("Mean: "+h.getMean()+" Standar Deviation: "+h.getStandarDeviation());
 	      System.out.println("Puntos menores que 15: " + h.sumProcedure(15));
-	      
+	      */
   }
 }
 
