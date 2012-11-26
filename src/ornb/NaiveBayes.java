@@ -1,12 +1,6 @@
 package ornb;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
-
-import sun.applet.GetMemberPluginCallRequest;
-
-import weka.core.Attribute;
-import weka.core.Instance;
 import weka.core.Utils;
 
 public class NaiveBayes {

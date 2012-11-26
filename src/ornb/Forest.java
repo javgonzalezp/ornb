@@ -2,7 +2,6 @@ package ornb;
 
 import java.util.ArrayList;
 
-import weka.core.Instance;
 import weka.core.Utils;
 
 public class Forest {
