@@ -89,7 +89,7 @@ public class Histogram {
 	public int getTotalFrequencies(){
 		int t = 0;
 		
-		for(int i=0; i<size; i++)
+		for(int i=0; i<bins.size(); i++)
 			t+=bins.get(i).getFrequency();
 		
 		return t;
