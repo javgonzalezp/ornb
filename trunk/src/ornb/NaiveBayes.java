@@ -1,6 +1,13 @@
 package ornb;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
+
+import sun.applet.GetMemberPluginCallRequest;
+
+import weka.core.Attribute;
+import weka.core.Instance;
+import weka.core.Utils;
 
 public class NaiveBayes {
 	int numClasses, numAttributes;
@@ -22,19 +29,15 @@ public class NaiveBayes {
 			histograms.add(new Histogram(5));
 	}
 	
-	public void addElement(String c, String a, String e){
+	public void addElement(String element){
 		//dividir el elemento dependiendo de la clase y atributo y el valor
-		
-		String _class = c, _attribute = a;
-		double value = Double.parseDouble(e);
+		String[] s = element.split(",");
+		String _class = s[4];
 		
 		for(int i=0; i<classes.length; i++){
 			if(classes[i].equalsIgnoreCase(_class)){
 				for(int j=0; j<attributes.length; j++){
-					if(attributes[j].equalsIgnoreCase(_attribute)){
-						histograms.get((numAttributes*i)+j).updateHistogram(value);
-						break;
-					}
+					histograms.get((numAttributes*i)+j).updateHistogram(Double.parseDouble(s[j]));
 				}
 			}
 		}
@@ -47,8 +50,8 @@ public class NaiveBayes {
 				for(int j=0; j<attributes.length; j++){
 					if(attributes[j].equalsIgnoreCase(_attribute)){
 						m = histograms.get((numAttributes*i)+j).getMean();
-						j=attributes.length;
 						i=classes.length;
+						break;
 					}
 				}
 			}
@@ -63,8 +66,8 @@ public class NaiveBayes {
 				for(int j=0; j<attributes.length; j++){
 					if(attributes[j].equalsIgnoreCase(_attribute)){
 						sd = histograms.get((numAttributes*i)+j).getStandarDeviation();
-						j=attributes.length;
 						i=classes.length;
+						break;
 					}
 				}
 			}
@@ -72,4 +75,58 @@ public class NaiveBayes {
 		return sd;
 	}
 	
+	public double[] getProbability(){
+		double [] probs = new double[classes.length];
+		double total_sum=0;
+		for (int j = 0; j < histograms.size(); j++)
+			total_sum+=histograms.get(j).getTotalFrequencies();
+		
+		for(int i=0; i<classes.length;i++){
+			double sum=0;
+			for(int j=0; j<attributes.length; j++){
+				sum+=histograms.get(numAttributes*i+j).getTotalFrequencies();
+			}
+			probs[i]=sum/total_sum;
+		}
+		
+		return probs;
+	}
+	
+	  public double [] distributionForInstance(String element) 
+	    throws Exception {
+		  String[] s = element.split(",");
+
+	    double [] probs = getProbability();
+
+	    int attIndex = 0;
+	    for(int i=0; i<attributes.length-1; i++){
+	    	double att = Double.parseDouble(s[i]);
+	    	double temp = 0, max = 0;
+	    	for (int j = 0; j < classes.length; j++) {
+	    		Histogram h = histograms.get(numAttributes*i+j);
+	    		//las multiplicaciones de los mean y stdv
+	    		//distribucion normal
+	    		double aux = -(Math.pow(att-h.getMean(),2)/2*Math.pow(h.getStandarDeviation(), 2));
+	    		double aux2= 1/Math.sqrt(2*Math.PI*Math.pow(h.getStandarDeviation(), 2));
+	    		temp = aux2*Math.exp(aux);
+	    		//temp = Math.max(1e-75, Math.pow(m_Distributions[attIndex][j].
+	              //                            getProbability(instance.value(attribute)), 
+	                //                          m_Instances.attribute(attIndex).weight()));
+	    		//se multiplica con la prob del elemento
+	    		probs[j] *= temp;
+	    		if (probs[j] > max) 
+	    			max = probs[j];
+	    	}
+	    	if ((max > 0) && (max < 1e-75)) { // Danger of probability underflow
+	    		for (int j = 0; j < classes.length; j++) {
+	    			probs[j] *= 1e75;
+	    		}
+	    	}
+	      	attIndex++;
+	    }
+
+	    // Display probabilities*/
+	    Utils.normalize(probs);
+	    return probs;
+	  }
 }

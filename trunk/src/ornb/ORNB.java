@@ -658,17 +658,30 @@ public class ORNB
 		loader = new DataSource("iris.arff");
 		data = loader.getDataSet();
 		Forest f = new Forest(10);
+   		//Predictions(nb, data);
+
 		f.initializeForest();
 		
+		//entrenamiento con iris
 	    Enumeration enu = data.enumerateInstances();
+	    //for(int j=0; j<100; j++){
+	    	//enu = data.enumerateInstances();
+		    while (enu.hasMoreElements()) {
+		    	 Instance instance = (Instance) enu.nextElement();
+		    	 f.addElement(instance.toString());
+		    }
+	    //}
+	    //testing con iris
+	    enu = data.enumerateInstances();
 	    while (enu.hasMoreElements()) {
 	    	 Instance instance = (Instance) enu.nextElement();
-	    	 f.addElement(instance.toString());
-	    	 //System.out.println(instance.toString());
+	    	 double[] a = f.classify(instance.toString());
+	    	 System.out.println(a[0]+" "+a[1]+" "+a[2]);
 	    }
 	    
-  
-	  /*NaiveBayes nb = new NaiveBayes();
+	    System.out.println("Hola");
+	//    */
+/*
 	  ORNB ornb = new ORNB();
 	    try {
 	    	DataSource loader;
@@ -682,8 +695,6 @@ public class ORNB
 	   			   data.setClassIndex(data.numAttributes()-1);
 	   		i.setDataset(data);
 
-	   		nb.buildClassifier(data);
-	   		
 	   	    Resample rs = new Resample();
 	   	    Random r = new Random();
    			double a = r.nextDouble();
