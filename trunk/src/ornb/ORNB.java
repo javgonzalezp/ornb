@@ -2,16 +2,13 @@ package ornb;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Random;
 import java.util.Vector;
 
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.meta.Bagging;
-import weka.classifiers.trees.RandomForest;
 import weka.core.AdditionalMeasureProducer;
-import weka.core.Attribute;
 import weka.core.Capabilities;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -20,7 +17,6 @@ import weka.core.OptionHandler;
 import weka.core.Randomizable;
 import weka.core.RevisionUtils;
 import weka.core.SparseInstance;
-import weka.core.Summarizable;
 import weka.core.TechnicalInformation;
 import weka.core.TechnicalInformation.Field;
 import weka.core.TechnicalInformation.Type;
@@ -28,7 +24,6 @@ import weka.core.converters.ConverterUtils.DataSource;
 import weka.core.TechnicalInformationHandler;
 import weka.core.Utils;
 import weka.core.WeightedInstancesHandler;
-import weka.filters.supervised.instance.Resample;
 
 /**
  <!-- globalinfo-start -->
