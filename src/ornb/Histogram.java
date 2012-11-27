@@ -1,36 +1,65 @@
 package ornb;
 
 import java.util.ArrayList;
-
+/**
+ * Class that handles all the options for the histograms in the program
+ * @author javgonzalez
+ *
+ */
 public class Histogram {
-	ArrayList<Point> bins;
+	/**
+	 * ArrayList that contains all the bins of the histogram
+	 */
+	ArrayList<Bin> bins;
+	/**
+	 * The total size of the histogram
+	 */
 	int size;
 	
 	public Histogram(int size){
-		bins = new ArrayList<Point>();
+		bins = new ArrayList<Bin>();
 		this.size = size;
 	}
-	
-	public ArrayList<Point> getHistogram(){
+	/**
+	 * Methos that return complete ArrayList of bins of the histogram
+	 * @return bins
+	 */
+	public ArrayList<Bin> getHistogram(){
 		return bins;
 	}
-	
+	/**
+	 * Method that updates the histogram depending if it has to add a new element
+	 * to a existing bin or if it has to create a new one 
+	 * @param d
+	 */
 	public void updateHistogram(double d){
-		Point p = new Point(d, 1);
+		Bin p = new Bin(d, 1);
+		//Search in the ArrayList of bins if the new Bin is already in the array or not
 		int pos = searchBinForPoint(p);
-		
+		//If it is found in the array
 		if(pos != -1)
+			//Simply adds the frequency to the bin
 			bins.get(pos).addFrequency();
 		else{
+			//If not we first add the new bin to the array of bins
 			bins.add(p);
+			//If the bins size is bigger that size stablished
 			if(bins.size()!=1 && bins.size()>size){
+				//First we sort the histogram
 				sortHistogram();
+				//Then we find the minimum difference between to bins and then we replace 
+				//the two bins for the new one
 				replaceBins(findMinimumDifference());
 			}
 		}
 	}
-	
-	public int searchBinForPoint(Point p){
+	/**
+	 * Method that searches for the position of a bin in the array of bins of the histogram
+	 * @param p
+	 * @return position
+	 */
+	public int searchBinForPoint(Bin p){
+		//The position of the array, if is not found the method returns -1
 		int position = -1;
 		
 		for(int i=0; i<bins.size(); i++){
@@ -42,7 +71,9 @@ public class Histogram {
 		
 		return position;
 	}
-	
+	/**
+	 * Method that sorts the bins of the histogram from lowest to highest using "selection sort"
+	 */
 	public void sortHistogram(){
 		for (int k = 0; k < bins.size(); k++){
 			int min = k;
@@ -50,14 +81,17 @@ public class Histogram {
 	            if (bins.get(i).getBin() < bins.get(min).getBin())
 	            	min=i;
 	        }
-			Point p = bins.get(k);
+			Bin p = bins.get(k);
 			bins.set(k, bins.get(min));
 			bins.set(min, p);
 		}
 	}
-	
+	/**
+	 * Method that finds the minimum difference between a pair of consecutive bins
+	 * @return The position of the bin with the minimum difference
+	 */
 	public int findMinimumDifference(){
-		float min = Float.POSITIVE_INFINITY;
+		double min = Float.POSITIVE_INFINITY;
 		int pos = -1;
 		
 		for(int i=1; i<bins.size(); i++){
@@ -69,23 +103,31 @@ public class Histogram {
 		
 		return pos;
 	}
-	
+	/**
+	 * Method that replaces to bins in the array for one bin
+	 * @param pos
+	 */
 	public void replaceBins(int pos){
-		float bin = (bins.get(pos-1).getBin()*bins.get(pos-1).getFrequency())+(bins.get(pos).getBin()*bins.get(pos).getFrequency());
+		double bin = (bins.get(pos-1).getBin()*bins.get(pos-1).getFrequency())+(bins.get(pos).getBin()*bins.get(pos).getFrequency());
 		int frequency = (bins.get(pos-1).getFrequency())+(bins.get(pos).getFrequency());
 		
-		Point p = new Point(bin/frequency, frequency);
+		Bin p = new Bin(bin/frequency, frequency);
 		
 		bins.remove(pos);
 		bins.remove(pos-1);
 		bins.add(pos-1, p);
 	}
-	
+	/**
+	 * Method that prints the histogram
+	 */
 	public void printHistogram(){
 		for(int i=0; i<size; i++)
 			System.out.println("Bin: "+bins.get(i).getBin()+" Frecuencia: "+bins.get(i).getFrequency());
 	}
-	
+	/**
+	 * Method that returns the total frequencies that the histogram contains
+	 * @return
+	 */
 	public int getTotalFrequencies(){
 		int t = 0;
 		
@@ -94,22 +136,28 @@ public class Histogram {
 		
 		return t;
 	}
-	
+	/**
+	 * Method that calculates the mean of the histogram
+	 * @return The mean of the histogram
+	 */
 	public double getMean(){
 		double m = 0;
 		double tf = getTotalFrequencies();
 		
-		for(int i=0; i<size; i++)
+		for(int i=0; i<bins.size(); i++)
 			m+=bins.get(i).getBin()*(bins.get(i).getFrequency()/tf);
 		
 		return m;
 	}
-	
-	public double getStandarDeviation(){
+	/**
+	 * Method that calculates the standard deviation of the histogram
+	 * @return The standard deviation of the histogram
+	 */
+	public double getStandardDeviation(){
 		double stdev = 0;
 		double tf = getTotalFrequencies();
 		
-		for(int i=0; i<size; i++){
+		for(int i=0; i<bins.size(); i++){
 			double aux = (bins.get(i).getBin()-(bins.get(i).getBin()*(bins.get(i).getFrequency()/tf)));
 			stdev+=aux*aux*(bins.get(i).getFrequency()/tf);
 		}
@@ -118,9 +166,9 @@ public class Histogram {
 		
 		return stdev;
 	}
-	
+
 	public int sumProcedure(double num){
-		Point p = new Point(num, 0);
+		Bin p = new Bin(num, 0);
 		int pos = -1; 
 		double freq_b = 0, sum = 0;
 		
@@ -129,14 +177,13 @@ public class Histogram {
 				pos=i;
 		}
 		
-		Point x = bins.get(pos-1); //i
-		Point y = bins.get(pos); //i+1
+		Bin x = bins.get(pos-1); //i
+		Bin y = bins.get(pos); //i+1
 		
 		double aux = y.getFrequency()-x.getFrequency();
 		double aux2 = y.getBin()-x.getBin();
 		double aux3= p.getBin()-x.getBin();
 		
-		//freq_b = x.getFrequency() + ((y.getFrequency()-x.getFrequency())/y.getBin()-x.getBin())*(p.getBin()-x.getBin());
 		freq_b = x.getFrequency() + (aux*aux3/aux2);
 		
 		sum = ((x.getFrequency() + freq_b)/2)*((p.getBin()-x.getBin())/(y.getBin()-x.getBin()));
