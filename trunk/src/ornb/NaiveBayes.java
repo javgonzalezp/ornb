@@ -59,7 +59,7 @@ public class NaiveBayes {
 			if(classes[i].equalsIgnoreCase(_class)){
 				for(int j=0; j<attributes.length; j++){
 					if(attributes[j].equalsIgnoreCase(_attribute)){
-						sd = histograms.get((numAttributes*i)+j).getStandarDeviation();
+						sd = histograms.get((numAttributes*i)+j).getStandardDeviation();
 						i=classes.length;
 						break;
 					}
@@ -92,16 +92,15 @@ public class NaiveBayes {
 
 	    double [] probs = getProbability();
 
-	    int attIndex = 0;
-	    for(int i=0; i<attributes.length-1; i++){
+	    for(int i=0; i<attributes.length; i++){
 	    	double att = Double.parseDouble(s[i]);
 	    	double temp = 0, max = 0;
 	    	for (int j = 0; j < classes.length; j++) {
-	    		Histogram h = histograms.get(numAttributes*i+j);
+	    		Histogram h = histograms.get(i+numAttributes*j);
 	    		//las multiplicaciones de los mean y stdv
 	    		//distribucion normal
-	    		double aux = -(Math.pow(att-h.getMean(),2)/2*Math.pow(h.getStandarDeviation(), 2));
-	    		double aux2= 1/Math.sqrt(2*Math.PI*Math.pow(h.getStandarDeviation(), 2));
+	    		double aux = -(Math.pow(att-h.getMean(),2)/2*Math.pow(h.getStandardDeviation(), 2));
+	    		double aux2= 1/Math.sqrt(2*Math.PI*Math.pow(h.getStandardDeviation(), 2));
 	    		temp = aux2*Math.exp(aux);
 	    		//temp = Math.max(1e-75, Math.pow(m_Distributions[attIndex][j].
 	              //                            getProbability(instance.value(attribute)), 
@@ -116,7 +115,6 @@ public class NaiveBayes {
 	    			probs[j] *= 1e75;
 	    		}
 	    	}
-	      	attIndex++;
 	    }
 
 	    // Display probabilities*/

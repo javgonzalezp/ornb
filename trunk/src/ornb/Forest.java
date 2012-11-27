@@ -23,7 +23,6 @@ public class Forest {
 	public void addElement(String element){
 		for(int i=0; i<numNB; i++){
 			int a = (int) (Math.random() * numNB);
-			System.out.println("NB: "+a);
 			NaiveBayes nb = forest.get(a);
 			nb.addElement(element);
 		}
