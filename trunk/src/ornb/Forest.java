@@ -7,11 +7,13 @@ import weka.core.Utils;
 public class Forest {
 	ArrayList<NaiveBayes> forest;
 	int numNB;
-	String[] classes = {"Iris-setosa", "Iris-versicolor", "Iris-virginica"};
-	String[] attributes = {"sepallength", "sepalwidth", "petallength", "petalwidth"};
+	String[] classes;
+	String[] attributes;
 	
-	public Forest(int numNB){
+	public Forest(int numNB, String[] classes, String[] attributes){
 		forest = new ArrayList<NaiveBayes>();
+		this.classes = classes;
+		this.attributes = attributes;
 		this.numNB = numNB;
 	}
 	
@@ -20,11 +22,11 @@ public class Forest {
 			forest.add(new NaiveBayes(classes, attributes));
 	}
 	
-	public void addElement(String element){
+	public void addElement(String element, String _class){
 		for(int i=0; i<numNB; i++){
 			int a = (int) (Math.random() * numNB);
 			NaiveBayes nb = forest.get(a);
-			nb.addElement(element);
+			nb.addElement(element, _class);
 		}
 
 	}

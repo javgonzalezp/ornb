@@ -23,10 +23,10 @@ public class NaiveBayes {
 			histograms.add(new Histogram(5));
 	}
 	
-	public void addElement(String element){
+	public void addElement(String element, String c){
 		//dividir el elemento dependiendo de la clase y atributo y el valor
 		String[] s = element.split(",");
-		String _class = s[4];
+		String _class = c;
 		
 		for(int i=0; i<classes.length; i++){
 			if(classes[i].equalsIgnoreCase(_class)){
@@ -109,6 +109,9 @@ public class NaiveBayes {
 	    		probs[j] *= temp;
 	    		if (probs[j] > max) 
 	    			max = probs[j];
+    		    if (Double.isNaN(probs[j])) {
+    			    throw new Exception("NaN returned from estimator for attribute " + element);
+    			}
 	    	}
 	    	if ((max > 0) && (max < 1e-75)) { // Danger of probability underflow
 	    		for (int j = 0; j < classes.length; j++) {
