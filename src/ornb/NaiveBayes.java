@@ -1,6 +1,9 @@
 package ornb;
 
 import java.util.ArrayList;
+
+import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
+
 import weka.core.Utils;
 
 public class NaiveBayes {
@@ -25,14 +28,21 @@ public class NaiveBayes {
 	
 	public void addElement(String element, String c){
 		//dividir el elemento dependiendo de la clase y atributo y el valor
-		String[] s = element.split(",");
+		//String[] s = element.split(",");
+		String[] s = element.split(" ");
 		String _class = c;
 		
+		if(classes[0].equalsIgnoreCase(_class))	
+			_class = c;
+		
 		for(int i=0; i<classes.length; i++){
+			String z = classes[i];
 			if(classes[i].equalsIgnoreCase(_class)){
-				for(int j=0; j<attributes.length; j++){
-					histograms.get((numAttributes*i)+j).updateHistogram(Double.parseDouble(s[j]));
+				for(int j=1; j<=attributes.length; j++){
+					String[] aux = s[j].split(":");
+					histograms.get((numAttributes*i)+j-1).updateHistogram(Double.parseDouble(aux[1]));
 				}
+				break;
 			}
 		}
 	}
@@ -88,14 +98,17 @@ public class NaiveBayes {
 	
 	  public double [] distributionForInstance(String element) 
 	    throws Exception {
-		  String[] s = element.split(",");
+		  //String[] s = element.split(",");
+		  String[] s = element.split(" ");
 
 	    double [] probs = getProbability();
 
 	    for(int i=0; i<attributes.length; i++){
-	    	double att = Double.parseDouble(s[i]);
+	    	String[] a = s[i+1].split(":");
+	    	double att = Double.parseDouble(a[1]);
 	    	double temp = 0, max = 0;
 	    	for (int j = 0; j < classes.length; j++) {
+	    		int z = i+numAttributes*j;
 	    		Histogram h = histograms.get(i+numAttributes*j);
 	    		//las multiplicaciones de los mean y stdv
 	    		//distribucion normal
@@ -105,7 +118,10 @@ public class NaiveBayes {
 	    		//temp = Math.max(1e-75, Math.pow(m_Distributions[attIndex][j].
 	              //                            getProbability(instance.value(attribute)), 
 	                //                          m_Instances.attribute(attIndex).weight()));
+	    		//if(Double.isInfinite(temp))
+	    			//temp=1.0;
 	    		//se multiplica con la prob del elemento
+	    		
 	    		probs[j] *= temp;
 	    		if (probs[j] > max) 
 	    			max = probs[j];
@@ -113,15 +129,15 @@ public class NaiveBayes {
     			    throw new Exception("NaN returned from estimator for attribute " + element);
     			}
 	    	}
-	    	if ((max > 0) && (max < 1e-75)) { // Danger of probability underflow
+	    	/*if ((max > 0) && (max < 1e-75)) { // Danger of probability underflow
 	    		for (int j = 0; j < classes.length; j++) {
 	    			probs[j] *= 1e75;
 	    		}
-	    	}
+	    	}*/
 	    }
 
 	    // Display probabilities*/
-	    Utils.normalize(probs);
+	    //Utils.normalize(probs);
 	    return probs;
 	  }
 }

@@ -1,5 +1,8 @@
 package ornb;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.Enumeration;
 
 import weka.classifiers.bayes.NaiveBayes;
@@ -19,27 +22,17 @@ public class ORNB{
    * @throws Exception 
    */
   public static void main(String[] argv) throws Exception {
-		DataSource loader;
+	  int numClasses = 26;
+	  int numAttributes = 16;
+/*		DataSource loader;
 		Instances data;
 	
-		loader = new DataSource("iris.arff");
+		loader = new DataSource("glass.arff");
 		data = loader.getDataSet();
-		
-		//NaiveBayes nb = new NaiveBayes();
 		
 		if (data.classIndex() == -1)
 			   data.setClassIndex(data.numAttributes()-1);
-		
-		//nb.buildClassifier(data);
-		  //Enumeration enu2 = data.enumerateInstances();
-		    //for(int j=0; j<100; j++){
-		    	//enu = data.enumerateInstances();
-			//    while (enu2.hasMoreElements()) {
-			  //  	 Instance instance = (Instance) enu2.nextElement();
-			    //	 double[] aux = nb.distributionForInstance(instance);
-			    //}
-		
-		
+
 		//obtain the attributes of the arff
 		String[] attributes = new String [data.numAttributes()-1];
 		for(int i=0; i<data.numAttributes()-1; i++)
@@ -49,14 +42,50 @@ public class ORNB{
 		String[] classes = new String [data.numClasses()];
 		for(int i=0; i<data.numClasses(); i++)
 			classes[i]=data.attribute(data.numAttributes()-1).value(i);
-		
+
+*/
+		//obtain the attributes of the arff
+		String[] attributes = new String [numAttributes];
+		for(int i=1; i<=numAttributes; i++)
+			attributes[i-1]=Integer.toString(i);
+
+		//obtain the classes of the arff
+		String[] classes = new String [numClasses];
+		for(int i=1; i<=numClasses; i++)
+			classes[i-1]=Integer.toString(i);
+
 		Forest f = new Forest(10, classes, attributes);
    		//Predictions(nb, data);
 
 		f.initializeForest();
+
+		//letter.scale.tr (tr)
+		File file = new File("letter.scale.tr");
+		BufferedReader bufRdr = new BufferedReader(new FileReader(file));
+		String line = null;
+		while ((line = bufRdr.readLine()) != null){
+			String[] s = line.split(" ");
+			f.addElement(line, s[0]);
+		}
 		
+		//reviasr si no hay histogramas vacios
+		
+		int[][] matrix = initializeConfusionMatrix(numClasses);
+	    //testing con iris
+		//letter.scale.t (testing)
+		file = new File("letter.scale.t");
+		bufRdr = new BufferedReader(new FileReader(file));
+		line = null;
+		while ((line = bufRdr.readLine()) != null){
+			String[] s = line.split(" ");
+			double[] a = f.classify(line);
+			matrix[Utils.maxIndex(a)][Integer.parseInt(s[0])-1]++;
+		}
+
+	    printConfusionMatrix(matrix, numClasses);
+
 		//entrenamiento con iris
-	    Enumeration enu = data.enumerateInstances();
+/*	    Enumeration enu = data.enumerateInstances();
 	    //for(int j=0; j<100; j++){
 	    	//enu = data.enumerateInstances();
 		    while (enu.hasMoreElements()) {
@@ -65,8 +94,9 @@ public class ORNB{
 		    }
 	    //}
 		
-		int[][] matrix = initializeConfusionMatrix(data.numClasses());
+		int[][] matrix = initializeConfusionMatrix(numClasses);
 	    //testing con iris
+		//letter.scale.t (testing)
 		double acc = 0.0;
 	    enu = data.enumerateInstances();
 	    while (enu.hasMoreElements()) {
@@ -78,8 +108,8 @@ public class ORNB{
 	    	 //System.out.println(instance.classValue()+" : "+(double)Utils.maxIndex(a));
 	    	 //data.
 	    }
-	    System.out.println("Accurracy: "+acc/data.numInstances());
-	    printConfusionMatrix(matrix, data.numClasses());
+	    //System.out.println("Accurracy: "+acc/data.numInstances());
+	    printConfusionMatrix(matrix, numClasses);
 	//    */
 /*
 	  ORNB ornb = new ORNB();
@@ -134,7 +164,7 @@ public class ORNB{
 	      h.printHistogram();
 	      double a=h.getMean();
 	      double b=h.getStandarDeviation();
-	      System.out.println("Mean: "+h.getMean()+" Standar Deviation: "+h.getStandarDeviation());
+	      System.out.println("Mean: "+h.getMean()+" Standard Deviation: "+h.getStandarDeviation());
 	      System.out.println("Puntos menores que 15: " + h.sumProcedure(15));
 	      */
   }
