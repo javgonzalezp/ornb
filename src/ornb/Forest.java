@@ -46,7 +46,7 @@ public class Forest {
 	    if (Utils.eq(Utils.sum(sums), 0)) {
 	    	return sums;
 	    } else {
-//		    Utils.normalize(sums);
+	    	Utils.normalize(sums);
 	    	return sums;
 	    }
 	}

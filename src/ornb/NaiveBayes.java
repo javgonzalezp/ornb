@@ -4,6 +4,10 @@ import java.util.ArrayList;
 
 import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
 
+import org.apache.commons.math3.distribution.NormalDistribution;
+
+import com.sun.xml.internal.ws.api.pipe.NextAction;
+
 import weka.core.Utils;
 
 public class NaiveBayes {
@@ -111,10 +115,13 @@ public class NaiveBayes {
 	    		int z = i+numAttributes*j;
 	    		Histogram h = histograms.get(i+numAttributes*j);
 	    		//las multiplicaciones de los mean y stdv
+	    		//
+	    		NormalDistribution n = new NormalDistribution(h.getMean(), h.getStandardDeviation());
+	    		temp = n.density(att);
 	    		//distribucion normal
-	    		double aux = -(Math.pow(att-h.getMean(),2)/2*Math.pow(h.getStandardDeviation(), 2));
-	    		double aux2= 1/Math.sqrt(2*Math.PI*Math.pow(h.getStandardDeviation(), 2));
-	    		temp = aux2*Math.exp(aux);
+	    		//double aux = -(Math.pow(att-h.getMean(),2)/2*Math.pow(h.getStandardDeviation(), 2));
+	    		//double aux2= 1/Math.sqrt(2*Math.PI*Math.pow(h.getStandardDeviation(), 2));
+	    		//temp = aux2*Math.exp(aux);
 	    		//temp = Math.max(1e-75, Math.pow(m_Distributions[attIndex][j].
 	              //                            getProbability(instance.value(attribute)), 
 	                //                          m_Instances.attribute(attIndex).weight()));
@@ -137,7 +144,7 @@ public class NaiveBayes {
 	    }
 
 	    // Display probabilities*/
-	    //Utils.normalize(probs);
+	    Utils.normalize(probs);
 	    return probs;
 	  }
 }

@@ -24,6 +24,7 @@ public class ORNB{
   public static void main(String[] argv) throws Exception {
 	  int numClasses = 26;
 	  int numAttributes = 16;
+	  int numNB = 100;
 /*		DataSource loader;
 		Instances data;
 	
@@ -54,7 +55,7 @@ public class ORNB{
 		for(int i=1; i<=numClasses; i++)
 			classes[i-1]=Integer.toString(i);
 
-		Forest f = new Forest(10, classes, attributes);
+		Forest f = new Forest(numNB, classes, attributes);
    		//Predictions(nb, data);
 
 		f.initializeForest();
@@ -73,15 +74,20 @@ public class ORNB{
 		int[][] matrix = initializeConfusionMatrix(numClasses);
 	    //testing con iris
 		//letter.scale.t (testing)
+		double acc = 0.0;
 		file = new File("letter.scale.t");
 		bufRdr = new BufferedReader(new FileReader(file));
 		line = null;
+		int count=0;
 		while ((line = bufRdr.readLine()) != null){
 			String[] s = line.split(" ");
 			double[] a = f.classify(line);
+			if(Integer.parseInt(s[0])-1==(double)Utils.maxIndex(a))
+	    		 acc++;
 			matrix[Utils.maxIndex(a)][Integer.parseInt(s[0])-1]++;
+			count++;
 		}
-
+		System.out.println("Accurracy: "+acc/count+" of a total of:"+count);
 	    printConfusionMatrix(matrix, numClasses);
 
 		//entrenamiento con iris
