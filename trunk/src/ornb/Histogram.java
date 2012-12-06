@@ -156,9 +156,11 @@ public class Histogram {
 	public double getStandardDeviation(){
 		double stdev = 0;
 		double tf = getTotalFrequencies();
+		double u = getMean();
 		
 		for(int i=0; i<bins.size(); i++){
-			double aux = (bins.get(i).getBin()-(bins.get(i).getBin()*(bins.get(i).getFrequency()/tf)));
+			//double aux = (bins.get(i).getBin()-(bins.get(i).getBin()*(bins.get(i).getFrequency()/tf)));
+			double aux = (bins.get(i).getBin()-(u));
 			stdev+=aux*aux*(bins.get(i).getFrequency()/tf);
 		}
 			
