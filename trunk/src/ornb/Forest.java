@@ -24,9 +24,10 @@ public class Forest {
 	
 	public void addElement(String element, String _class){
 		for(int i=0; i<numNB; i++){
-			int a = (int) (Math.random() * numNB);
-			NaiveBayes nb = forest.get(a);
-			nb.addElement(element, _class);
+			int a = (int) (Math.random() * 2);
+			NaiveBayes nb = forest.get(i);
+			if(a==1)
+				nb.addElement(element, _class);
 		}
 
 	}
@@ -45,7 +46,7 @@ public class Forest {
 	    if (Utils.eq(Utils.sum(sums), 0)) {
 	    	return sums;
 	    } else {
-	    	Utils.normalize(sums);
+//		    Utils.normalize(sums);
 	    	return sums;
 	    }
 	}
