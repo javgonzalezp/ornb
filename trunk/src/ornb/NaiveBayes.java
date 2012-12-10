@@ -11,23 +11,24 @@ import com.sun.xml.internal.ws.api.pipe.NextAction;
 import weka.core.Utils;
 
 public class NaiveBayes {
-	int numClasses, numAttributes;
+	int numClasses, numAttributes, numBins;
 	ArrayList<Histogram> histograms;
 	String[] classes;
 	String[] attributes;
 	
-	public NaiveBayes(String[] classes, String[] attributes){
+	public NaiveBayes(String[] classes, String[] attributes, int numBins){
 		this.numClasses = classes.length;
 		this.numAttributes = attributes.length;
 		histograms = new ArrayList<Histogram>();
 		this.classes = classes;
 		this.attributes = attributes;
+		this.numBins = numBins;
 		initializeHistograms();
 	}
 	
 	public void initializeHistograms(){
 		for(int i=0; i<numClasses*numAttributes; i++)
-			histograms.add(new Histogram(5));
+			histograms.add(new Histogram(numBins));
 	}
 	
 	public void addElement(String element, String c){
@@ -42,9 +43,9 @@ public class NaiveBayes {
 		for(int i=0; i<classes.length; i++){
 			String z = classes[i];
 			if(classes[i].equalsIgnoreCase(_class)){
-				for(int j=1; j<=attributes.length; j++){
+				for(int j=1; j<s.length; j++){
 					String[] aux = s[j].split(":");
-					histograms.get((numAttributes*i)+j-1).updateHistogram(Double.parseDouble(aux[1]));
+					histograms.get((numAttributes*i)+Integer.parseInt(aux[0])-1).updateHistogram(Double.parseDouble(aux[1]));
 				}
 				break;
 			}
@@ -100,24 +101,39 @@ public class NaiveBayes {
 		return probs;
 	}
 	
-	  public double [] distributionForInstance(String element) 
+	  public double [] distributionForInstance(String element, int features) 
 	    throws Exception {
 		  //String[] s = element.split(",");
 		  String[] s = element.split(" ");
 
 	    double [] probs = getProbability();
-
-	    for(int i=0; i<attributes.length; i++){
-	    	String[] a = s[i+1].split(":");
+	    int[] values = new int[features];
+	    for(int i=0; i<features; i++)
+	    	values[i]=-1;
+	    
+	    int aux=0;
+	    while(aux<features){
+	    	int z = (int) (Math.random() * attributes.length);
+	    	if(checkValue(values, z)){
+	    		values[aux]=z;
+	    		aux++;
+	    	}
+	    }
+	    
+	    for(int i=0; i<values.length; i++){
+	    	String[] a = s[values[i]].split(":");
 	    	double att = Double.parseDouble(a[1]);
 	    	double temp = 0, max = 0;
 	    	for (int j = 0; j < classes.length; j++) {
-	    		int z = i+numAttributes*j;
-	    		Histogram h = histograms.get(i+numAttributes*j);
+	    		Histogram h = histograms.get(Integer.parseInt(a[0])-1+numAttributes*j);
 	    		//las multiplicaciones de los mean y stdv
 	    		//
-	    		NormalDistribution n = new NormalDistribution(h.getMean(), h.getStandardDeviation());
-	    		temp = n.density(att);
+	    		if(h.getStandardDeviation()!=0.0){
+	    			NormalDistribution n = new NormalDistribution(h.getMean(), h.getStandardDeviation());
+	    			temp = n.density(att);
+	    		}
+	    		else
+	    			temp=1.0;
 	    		//distribucion normal
 	    		//double aux = -(Math.pow(att-h.getMean(),2)/2*Math.pow(h.getStandardDeviation(), 2));
 	    		//double aux2= 1/Math.sqrt(2*Math.PI*Math.pow(h.getStandardDeviation(), 2));
@@ -144,7 +160,19 @@ public class NaiveBayes {
 	    }
 
 	    // Display probabilities*/
-	    Utils.normalize(probs);
+	    //Utils.normalize(probs);
 	    return probs;
 	  }
+
+	public boolean checkValue(int[] values, int z) {
+		if(z==0)
+			return false;
+		
+		for(int i=0; i<values.length; i++){
+			if(z==values[i])
+				return false;
+		}
+		
+		return true;
+	}
 }

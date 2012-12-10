@@ -6,20 +6,21 @@ import weka.core.Utils;
 
 public class Forest {
 	ArrayList<NaiveBayes> forest;
-	int numNB;
+	int numNB, numBins;
 	String[] classes;
 	String[] attributes;
 	
-	public Forest(int numNB, String[] classes, String[] attributes){
+	public Forest(int numNB, String[] classes, String[] attributes, int numBins){
 		forest = new ArrayList<NaiveBayes>();
 		this.classes = classes;
 		this.attributes = attributes;
 		this.numNB = numNB;
+		this.numBins = numBins;
 	}
 	
 	public void initializeForest(){
 		for(int i=0; i<numNB; i++)
-			forest.add(new NaiveBayes(classes, attributes));
+			forest.add(new NaiveBayes(classes, attributes, numBins));
 	}
 	
 	public void addElement(String element, String _class){
@@ -32,12 +33,12 @@ public class Forest {
 
 	}
 
-	public double[] classify(String element) throws Exception {
+	public double[] classify(String element, int features) throws Exception {
 		double [] sums = new double [classes.length], newProbs;
 		
 		for (int i = 0; i < numNB; i++) {
     		//se obtienen las probabilidades del forest de NB
-    		newProbs = forest.get(i).distributionForInstance(element);
+    		newProbs = forest.get(i).distributionForInstance(element, features);
     		for (int j = 0; j < newProbs.length; j++)
     			//se suman al contador correspondiente 
     			sums[j] += newProbs[j];
@@ -46,7 +47,7 @@ public class Forest {
 	    if (Utils.eq(Utils.sum(sums), 0)) {
 	    	return sums;
 	    } else {
-	    	Utils.normalize(sums);
+	    	//Utils.normalize(sums);
 	    	return sums;
 	    }
 	}

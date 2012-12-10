@@ -2,7 +2,9 @@ package ornb;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.Enumeration;
 
 import weka.classifiers.bayes.NaiveBayes;
@@ -19,12 +21,20 @@ public class ORNB{
    * Main method for this class.
    *
    * @param argv the options
-   * @throws Exception 
+ * @throws Exception 
    */
-  public static void main(String[] argv) throws Exception {
-	  int numClasses = 26;
-	  int numAttributes = 16;
-	  int numNB = 100;
+  public static void main(String[] argv) throws Exception{
+	  if (argv.length != 7) {
+		  System.out.println ("Uso correcto: java -jar archivoDeTraining archivoDeTesting numClases numAtributos numNB numBins features");
+		  System.exit(0);
+		 }
+	  String trFile = argv[0];
+	  String testFile = argv[1];
+	  int numClasses = Integer.parseInt(argv[2]);
+	  int numAttributes = Integer.parseInt(argv[3]);
+	  int numNB = Integer.parseInt(argv[4]);
+	  int numBins = Integer.parseInt(argv[5]);
+	  double features = Double.parseDouble(argv[6]);
 /*		DataSource loader;
 		Instances data;
 	
@@ -55,13 +65,13 @@ public class ORNB{
 		for(int i=1; i<=numClasses; i++)
 			classes[i-1]=Integer.toString(i);
 
-		Forest f = new Forest(numNB, classes, attributes);
+		Forest f = new Forest(numNB, classes, attributes, numBins);
    		//Predictions(nb, data);
 
 		f.initializeForest();
 
 		//letter.scale.tr (tr)
-		File file = new File("letter.scale.tr");
+		File file = new File(trFile);
 		BufferedReader bufRdr = new BufferedReader(new FileReader(file));
 		String line = null;
 		while ((line = bufRdr.readLine()) != null){
@@ -75,13 +85,13 @@ public class ORNB{
 	    //testing con iris
 		//letter.scale.t (testing)
 		double acc = 0.0;
-		file = new File("letter.scale.t");
+		file = new File(testFile);
 		bufRdr = new BufferedReader(new FileReader(file));
 		line = null;
 		int count=0;
 		while ((line = bufRdr.readLine()) != null){
 			String[] s = line.split(" ");
-			double[] a = f.classify(line);
+			double[] a = f.classify(line, (int) (features*numAttributes));
 			if(Integer.parseInt(s[0])-1==(double)Utils.maxIndex(a))
 	    		 acc++;
 			matrix[Utils.maxIndex(a)][Integer.parseInt(s[0])-1]++;
