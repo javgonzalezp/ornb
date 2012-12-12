@@ -9,6 +9,7 @@ public class Forest {
 	int numNB, numBins;
 	String[] classes;
 	String[] attributes;
+	int naiveb = 0;
 	
 	public Forest(int numNB, String[] classes, String[] attributes, int numBins){
 		forest = new ArrayList<NaiveBayes>();
@@ -24,13 +25,18 @@ public class Forest {
 	}
 	
 	public void addElement(String element, String _class){
-		for(int i=0; i<numNB; i++){
+		/*for(int i=0; i<numNB; i++){
 			int a = (int) (Math.random() * 2);
 			NaiveBayes nb = forest.get(i);
 			if(a==1)
 				nb.addElement(element, _class);
-		}
-
+		}*/
+		//NaiveBayes nb = forest.get((int) (Math.random() * numNB+1));
+		if(naiveb>=numNB)
+			naiveb=0;
+		NaiveBayes nb = forest.get(naiveb);
+		nb.addElement(element, _class);
+		naiveb++;
 	}
 
 	public double[] classify(String element, int features) throws Exception {
