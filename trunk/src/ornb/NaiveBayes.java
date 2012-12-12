@@ -2,13 +2,7 @@ package ornb;
 
 import java.util.ArrayList;
 
-import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
-
 import org.apache.commons.math3.distribution.NormalDistribution;
-
-import com.sun.xml.internal.ws.api.pipe.NextAction;
-
-import weka.core.Utils;
 
 public class NaiveBayes {
 	int numClasses, numAttributes, numBins;
@@ -41,7 +35,6 @@ public class NaiveBayes {
 			_class = c;
 		
 		for(int i=0; i<classes.length; i++){
-			String z = classes[i];
 			if(classes[i].equalsIgnoreCase(_class)){
 				for(int j=1; j<s.length; j++){
 					String[] aux = s[j].split(":");
@@ -107,17 +100,21 @@ public class NaiveBayes {
 		  String[] s = element.split(" ");
 
 	    double [] probs = getProbability();
+	    
+	    ArrayList<String> v = new ArrayList<String>();
+	    for(int i=0; i<attributes.length; i++)
+	    	v.add(attributes[i]);
+	    
 	    int[] values = new int[features];
 	    for(int i=0; i<features; i++)
 	    	values[i]=-1;
 	    
 	    int aux=0;
 	    while(aux<features){
-	    	int z = (int) (Math.random() * attributes.length);
-	    	if(checkValue(values, z)){
-	    		values[aux]=z;
-	    		aux++;
-	    	}
+	    	int z = (int) (Math.random() * v.size());
+    		values[aux]=Integer.parseInt(v.get(z));
+    		aux++;
+    		v.remove(z);
 	    }
 	    
 	    for(int i=0; i<values.length; i++){

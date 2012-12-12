@@ -2,18 +2,8 @@ package ornb;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
-import java.util.Enumeration;
-
-import weka.classifiers.bayes.NaiveBayes;
-import weka.core.Attribute;
-import weka.core.Instance;
-import weka.core.Instances;
-import weka.core.SparseInstance;
 import weka.core.Utils;
-import weka.core.converters.ConverterUtils.DataSource;
 
 public class ORNB{
   
@@ -25,16 +15,16 @@ public class ORNB{
    */
   public static void main(String[] argv) throws Exception{
 	  if (argv.length != 7) {
-		  System.out.println ("Uso correcto: java -jar archivoDeTraining archivoDeTesting numClases numAtributos numNB numBins features");
+		  System.out.println ("Uso correcto: java -jar archivoDeTraining archivoDeTesting numClases numAtributos numBins numNB features");
 		  System.exit(0);
 		 }
 	  String trFile = argv[0];
 	  String testFile = argv[1];
 	  int numClasses = Integer.parseInt(argv[2]);
 	  int numAttributes = Integer.parseInt(argv[3]);
-	  int numNB = Integer.parseInt(argv[4]);
-	  int numBins = Integer.parseInt(argv[5]);
-	  double features = Double.parseDouble(argv[6]);
+	  int numBins = Integer.parseInt(argv[4]);
+	  int numNB = Integer.parseInt(argv[5]);
+	  double features = Math.ceil(Double.parseDouble(argv[6])/10*numAttributes);
 /*		DataSource loader;
 		Instances data;
 	
@@ -91,14 +81,16 @@ public class ORNB{
 		int count=0;
 		while ((line = bufRdr.readLine()) != null){
 			String[] s = line.split(" ");
-			double[] a = f.classify(line, (int) (features*numAttributes));
+			double[] a = f.classify(line, (int) features);
 			if(Integer.parseInt(s[0])-1==(double)Utils.maxIndex(a))
 	    		 acc++;
 			matrix[Utils.maxIndex(a)][Integer.parseInt(s[0])-1]++;
 			count++;
 		}
-		System.out.println("Accurracy: "+acc/count+" of a total of:"+count);
-	    printConfusionMatrix(matrix, numClasses);
+		System.out.println("With the values #Bins: "+numBins+" #NB: "+numNB+" Features: "+(int) features);
+		System.out.println("Accurracy: "+acc/count);
+		System.out.println("----------------------------------------------");
+	    //printConfusionMatrix(matrix, numClasses);
 
 		//entrenamiento con iris
 /*	    Enumeration enu = data.enumerateInstances();
@@ -185,6 +177,7 @@ public class ORNB{
 	      */
   }
 
+@SuppressWarnings("unused")
 private static void printConfusionMatrix(int[][] matrix, int numClasses) {
 	System.out.println("Confusion Matrix");
 	for(int j=0; j<numClasses; j++){
