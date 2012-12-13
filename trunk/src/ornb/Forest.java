@@ -31,7 +31,7 @@ public class Forest {
 			if(a==1)
 				nb.addElement(element, _class);
 		}*/
-		//NaiveBayes nb = forest.get((int) (Math.random() * numNB+1));
+		//NaiveBayes nb = forest.get((int) (Math.random() * numNB));
 		if(naiveb>=numNB)
 			naiveb=0;
 		NaiveBayes nb = forest.get(naiveb);
