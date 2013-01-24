@@ -2,6 +2,8 @@ package ornb;
 
 import java.util.ArrayList;
 
+import weka.classifiers.Evaluation;
+import weka.core.Instance;
 import weka.core.Utils;
 
 public class Forest {
@@ -9,7 +11,7 @@ public class Forest {
 	int numNB, numBins;
 	String[] classes;
 	String[] attributes;
-	int naiveb = 0;
+	int naiveb;
 	
 	public Forest(int numNB, String[] classes, String[] attributes, int numBins){
 		forest = new ArrayList<NaiveBayes>();
@@ -17,6 +19,7 @@ public class Forest {
 		this.attributes = attributes;
 		this.numNB = numNB;
 		this.numBins = numBins;
+		naiveb = (int) (Math.random() * numNB);
 	}
 	
 	public void initializeForest(){
@@ -25,18 +28,19 @@ public class Forest {
 	}
 	
 	public void addElement(String element, String _class){
-		/*for(int i=0; i<numNB; i++){
+	//public void addElement(Instance instance){
+		for(int i=0; i<numNB; i++){
 			int a = (int) (Math.random() * 2);
 			NaiveBayes nb = forest.get(i);
 			if(a==1)
 				nb.addElement(element, _class);
-		}*/
+		}
 		//NaiveBayes nb = forest.get((int) (Math.random() * numNB));
-		if(naiveb>=numNB)
-			naiveb=0;
-		NaiveBayes nb = forest.get(naiveb);
-		nb.addElement(element, _class);
-		naiveb++;
+		//if(naiveb>=numNB)
+			//naiveb=0;
+		//NaiveBayes nb = forest.get(naiveb);
+		//nb.addElement(element, _class);
+		//naiveb++;
 	}
 
 	public double[] classify(String element, int features) throws Exception {
@@ -48,7 +52,7 @@ public class Forest {
     		for (int j = 0; j < newProbs.length; j++)
     			//se suman al contador correspondiente 
     			sums[j] += newProbs[j];
-	    }
+    		}
 		
 	    if (Utils.eq(Utils.sum(sums), 0)) {
 	    	return sums;
@@ -57,6 +61,7 @@ public class Forest {
 	    	return sums;
 	    }
 	}
+
 	/*
 	public double[] distributionForInstance(Instance instance) throws Exception {
 

@@ -27,8 +27,8 @@ public class NaiveBayes {
 	
 	public void addElement(String element, String c){
 		//dividir el elemento dependiendo de la clase y atributo y el valor
-		//String[] s = element.split(",");
-		String[] s = element.split(" ");
+		String[] s = element.split(",");
+		//String[] s = element.split(" ");
 		String _class = c;
 		
 		if(classes[0].equalsIgnoreCase(_class))	
@@ -36,9 +36,10 @@ public class NaiveBayes {
 		
 		for(int i=0; i<classes.length; i++){
 			if(classes[i].equalsIgnoreCase(_class)){
-				for(int j=1; j<s.length; j++){
-					String[] aux = s[j].split(":");
-					histograms.get((numAttributes*i)+Integer.parseInt(aux[0])-1).updateHistogram(Double.parseDouble(aux[1]));
+				//for(int j=1; j<s.length; j++){
+				for(int j=0; j<s.length-1; j++){
+					//String[] aux = s[j].split(":");
+					histograms.get((numAttributes*i)+j).updateHistogram(Double.parseDouble(s[j]));
 				}
 				break;
 			}
@@ -96,12 +97,12 @@ public class NaiveBayes {
 	
 	  public double [] distributionForInstance(String element, int features) 
 	    throws Exception {
-		  //String[] s = element.split(",");
-		  String[] s = element.split(" ");
+		  String[] s = element.split(",");
+		  //String[] s = element.split(" ");
 
 	    double [] probs = getProbability();
 	    
-	    ArrayList<String> v = new ArrayList<String>();
+	    /*ArrayList<String> v = new ArrayList<String>();
 	    for(int i=0; i<attributes.length; i++)
 	    	v.add(attributes[i]);
 	    
@@ -116,13 +117,13 @@ public class NaiveBayes {
     		aux++;
     		v.remove(z);
 	    }
-	    
-	    for(int i=0; i<values.length; i++){
-	    	String[] a = s[values[i]].split(":");
-	    	double att = Double.parseDouble(a[1]);
+	    */
+	    for(int i=0; i<attributes.length; i++){
+	    	//String[] a = s[values[i]].split(":");
+	    	double att = Double.parseDouble(s[i]);
 	    	double temp = 0, max = 0;
 	    	for (int j = 0; j < classes.length; j++) {
-	    		Histogram h = histograms.get(Integer.parseInt(a[0])-1+numAttributes*j);
+	    		Histogram h = histograms.get(i+numAttributes*j);
 	    		//las multiplicaciones de los mean y stdv
 	    		//
 	    		if(h.getStandardDeviation()!=0.0){

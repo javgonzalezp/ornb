@@ -3,7 +3,15 @@ package ornb;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.Enumeration;
+
+import weka.classifiers.Evaluation;
+import weka.classifiers.bayes.NaiveBayes;
+import weka.core.Instance;
+import weka.core.Instances;
+import weka.core.SparseInstance;
 import weka.core.Utils;
+import weka.core.converters.ConverterUtils.DataSource;
 
 public class ORNB{
   
@@ -14,17 +22,16 @@ public class ORNB{
  * @throws Exception 
    */
   public static void main(String[] argv) throws Exception{
-	  if (argv.length != 7) {
-		  System.out.println ("Uso correcto: java -jar archivoDeTraining archivoDeTesting numClases numAtributos numBins numNB features");
+	  if (argv.length != 3) {
+		  System.out.println ("Uso correcto: java -jar archivo numBins numNB");
 		  System.exit(0);
 		 }
-	  String trFile = argv[0];
-	  String testFile = argv[1];
-	  int numClasses = Integer.parseInt(argv[2]);
-	  int numAttributes = Integer.parseInt(argv[3]);
-	  int numBins = Integer.parseInt(argv[4]);
-	  int numNB = Integer.parseInt(argv[5]);
-	  double features = Math.ceil(Double.parseDouble(argv[6])/10*numAttributes);
+	  String trFile = argv[0]+".tr.arff";
+	  String testFile = argv[0]+".t.arff";
+	  int numAttributes;
+	  int numBins = Integer.parseInt(argv[1]);
+	  int numNB = Integer.parseInt(argv[2]);
+	  double features;//Math.ceil(Double.parseDouble(argv[6])/10*numAttributes);
 /*		DataSource loader;
 		Instances data;
 	
@@ -44,7 +51,7 @@ public class ORNB{
 		for(int i=0; i<data.numClasses(); i++)
 			classes[i]=data.attribute(data.numAttributes()-1).value(i);
 
-*/
+
 		//obtain the attributes of the arff
 		String[] attributes = new String [numAttributes];
 		for(int i=1; i<=numAttributes; i++)
@@ -71,7 +78,7 @@ public class ORNB{
 		
 		//reviasr si no hay histogramas vacios
 		
-		int[][] matrix = initializeConfusionMatrix(numClasses);
+		//int[][] matrix = initializeConfusionMatrix(numClasses);
 	    //testing con iris
 		//letter.scale.t (testing)
 		double acc = 0.0;
@@ -84,40 +91,74 @@ public class ORNB{
 			double[] a = f.classify(line, (int) features);
 			if(Integer.parseInt(s[0])-1==(double)Utils.maxIndex(a))
 	    		 acc++;
-			matrix[Utils.maxIndex(a)][Integer.parseInt(s[0])-1]++;
+			//matrix[Utils.maxIndex(a)][Integer.parseInt(s[0])-1]++;
 			count++;
 		}
 		System.out.println("With the values #Bins: "+numBins+" #NB: "+numNB+" Features: "+(int) features);
-		System.out.println("Accurracy: "+acc/count);
+		System.out.println("Accurracy: "+acc/count + " acc:"+acc+" count:"+count);
 		System.out.println("----------------------------------------------");
 	    //printConfusionMatrix(matrix, numClasses);
+*/
+	  	DataSource loader;
+  		Instances data;
+  	
+		loader = new DataSource(trFile);
+		data = loader.getDataSet();
+		
+		if (data.classIndex() == -1)
+			   data.setClassIndex(data.numAttributes()-1);
 
+		numAttributes = data.numAttributes();
+		features = numAttributes;
+		
+		String[] attributes = new String [data.numAttributes()-1];
+		for(int i=0; i<data.numAttributes()-1; i++)
+			attributes[i]=data.attribute(i).name();
+
+		//obtain the classes of the arff
+		String[] classes = new String [data.numClasses()];
+		for(int i=0; i<data.numClasses(); i++)
+			classes[i]=data.attribute(data.numAttributes()-1).value(i);
+		
+		Forest f = new Forest(numNB, classes, attributes, numBins);
+		f.initializeForest();
+			  
 		//entrenamiento con iris
-/*	    Enumeration enu = data.enumerateInstances();
+	    Enumeration enu = data.enumerateInstances();
 	    //for(int j=0; j<100; j++){
 	    	//enu = data.enumerateInstances();
 		    while (enu.hasMoreElements()) {
 		    	 Instance instance = (Instance) enu.nextElement();
 		    	 f.addElement(instance.toString(), instance.stringValue(instance.numValues()-1));
+		    	 //f.addElement(instance);
 		    }
 	    //}
 		
-		int[][] matrix = initializeConfusionMatrix(numClasses);
+		double[][] matrix = initializeConfusionMatrix(data.numClasses());
+		
+	    loader = new DataSource(testFile);
+		data = loader.getDataSet();
+		
+		if (data.classIndex() == -1)
+			   data.setClassIndex(data.numAttributes()-1);
+		    
 	    //testing con iris
 		//letter.scale.t (testing)
 		double acc = 0.0;
 	    enu = data.enumerateInstances();
 	    while (enu.hasMoreElements()) {
 	    	 Instance instance = (Instance) enu.nextElement();
-	    	 double[] a = f.classify(instance.toString());
+	    	 double[] a = f.classify(instance.toString(), (int) features);
 	    	 if(instance.classValue()==(double)Utils.maxIndex(a))
 	    		 acc++;
 	    	 matrix[Utils.maxIndex(a)][(int) instance.classValue()]++;
 	    	 //System.out.println(instance.classValue()+" : "+(double)Utils.maxIndex(a));
 	    	 //data.
 	    }
-	    //System.out.println("Accurracy: "+acc/data.numInstances());
-	    printConfusionMatrix(matrix, numClasses);
+	    //System.out.println("Accurracy: "+acc/data.numInstances()+" acc:"+acc+" numInstances:"+data.numInstances());
+	    //printConfusionMatrix(matrix, numClasses);
+	    ornb.Evaluation ev = new ornb.Evaluation(matrix, acc, data.numInstances());
+	    System.out.println(ev.toString());
 	//    */
 /*
 	  ORNB ornb = new ORNB();
@@ -177,18 +218,8 @@ public class ORNB{
 	      */
   }
 
-@SuppressWarnings("unused")
-private static void printConfusionMatrix(int[][] matrix, int numClasses) {
-	System.out.println("Confusion Matrix");
-	for(int j=0; j<numClasses; j++){
-		for(int k=0; k<numClasses; k++)
-			System.out.print(matrix[j][k]+" ");
-		System.out.println();
-	}
-}
-
-private static int[][] initializeConfusionMatrix(int i) {
-	int[][] matrix = new int[i][i];
+private static double[][] initializeConfusionMatrix(int i) {
+	double[][] matrix = new double[i][i];
 	
 	for(int j=0; j<i; j++){
 		for(int k=0; k<i; k++)
