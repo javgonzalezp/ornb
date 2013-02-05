@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 
+import weka.core.Utils;
+
 public class NaiveBayes {
 	int numClasses, numAttributes, numBins;
 	ArrayList<Histogram> histograms;
@@ -158,7 +160,7 @@ public class NaiveBayes {
 	    }
 
 	    // Display probabilities*/
-	    //Utils.normalize(probs);
+	    Utils.normalize(probs);
 	    return probs;
 	  }
 
