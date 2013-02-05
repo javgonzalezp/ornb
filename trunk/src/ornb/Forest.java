@@ -60,6 +60,7 @@ public class Forest {
 	    	//Utils.normalize(sums);
 	    	return sums;
 	    }
+
 	}
 
 	/*

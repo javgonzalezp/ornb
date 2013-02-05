@@ -32,6 +32,9 @@ public class ORNB{
 	  int numBins = Integer.parseInt(argv[1]);
 	  int numNB = Integer.parseInt(argv[2]);
 	  double features;//Math.ceil(Double.parseDouble(argv[6])/10*numAttributes);
+	  double[] m_ClassPriors;
+	  double m_ClassPriorsSum;
+	  
 /*		DataSource loader;
 		Instances data;
 	
@@ -111,6 +114,10 @@ public class ORNB{
 		numAttributes = data.numAttributes();
 		features = numAttributes;
 		
+//		String[] options = {"-o","-i","-t",trFile,"-T",testFile};
+//		NaiveBayes n = new NaiveBayes();
+//		n.runClassifier(n, options);
+		
 		String[] attributes = new String [data.numAttributes()-1];
 		for(int i=0; i<data.numAttributes()-1; i++)
 			attributes[i]=data.attribute(i).name();
@@ -122,7 +129,13 @@ public class ORNB{
 		
 		Forest f = new Forest(numNB, classes, attributes, numBins);
 		f.initializeForest();
-			  
+		
+		m_ClassPriors = new double[data.numClasses()];
+	    for (int i = 0; i < data.numClasses(); i++) {
+	    	m_ClassPriors[i] = 1;
+	    }
+	    m_ClassPriorsSum = data.numClasses();
+	    
 		//entrenamiento con iris
 	    Enumeration enu = data.enumerateInstances();
 	    //for(int j=0; j<100; j++){
@@ -130,6 +143,9 @@ public class ORNB{
 		    while (enu.hasMoreElements()) {
 		    	 Instance instance = (Instance) enu.nextElement();
 		    	 f.addElement(instance.toString(), instance.stringValue(instance.numValues()-1));
+		    	 //agregar a prior
+		    	 m_ClassPriors[(int) instance.classValue()] += instance.weight();
+		         m_ClassPriorsSum += instance.weight();
 		    	 //f.addElement(instance);
 		    }
 	    //}
@@ -141,7 +157,9 @@ public class ORNB{
 		
 		if (data.classIndex() == -1)
 			   data.setClassIndex(data.numAttributes()-1);
-		    
+
+		ornb.Evaluation ev = new ornb.Evaluation(data.numInstances(), data.numClasses(), m_ClassPriors, m_ClassPriorsSum, classes);
+				
 	    //testing con iris
 		//letter.scale.t (testing)
 		double acc = 0.0;
@@ -149,6 +167,8 @@ public class ORNB{
 	    while (enu.hasMoreElements()) {
 	    	 Instance instance = (Instance) enu.nextElement();
 	    	 double[] a = f.classify(instance.toString(), (int) features);
+	    	 ev.updateNumericScores(a, instance.classValue(), instance.weight());
+	    	 ev.setPredictions(instance, a);
 	    	 if(instance.classValue()==(double)Utils.maxIndex(a))
 	    		 acc++;
 	    	 matrix[Utils.maxIndex(a)][(int) instance.classValue()]++;
@@ -157,8 +177,11 @@ public class ORNB{
 	    }
 	    //System.out.println("Accurracy: "+acc/data.numInstances()+" acc:"+acc+" numInstances:"+data.numInstances());
 	    //printConfusionMatrix(matrix, numClasses);
-	    ornb.Evaluation ev = new ornb.Evaluation(matrix, acc, data.numInstances());
+	    //ornb.Evaluation ev = new ornb.Evaluation(matrix, acc, data.numInstances(), data.numClasses());
+	    ev.setCorrect(acc);
+	    ev.setMatrix(matrix);
 	    System.out.println(ev.toString());
+	    
 	//    */
 /*
 	  ORNB ornb = new ORNB();
