@@ -146,8 +146,8 @@ public class NaiveBayes {
 	    		//se multiplica con la prob del elemento
 	    		
 	    		probs[j] *= temp;
-	    		if (probs[j] > max) 
-	    			max = probs[j];
+//	    		if (probs[j] > max) 
+//	    			max = probs[j];
     		    if (Double.isNaN(probs[j])) {
     			    throw new Exception("NaN returned from estimator for attribute " + element);
     			}
@@ -160,7 +160,7 @@ public class NaiveBayes {
 	    }
 
 	    // Display probabilities*/
-	    Utils.normalize(probs);
+//	    Utils.normalize(probs);
 	    return probs;
 	  }
 

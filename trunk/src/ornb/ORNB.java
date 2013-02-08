@@ -114,6 +114,8 @@ public class ORNB{
 		numAttributes = data.numAttributes();
 		features = numAttributes;
 		
+//		System.out.println(data.classAttribute().isNominal());
+		
 //		String[] options = {"-o","-i","-t",trFile,"-T",testFile};
 //		NaiveBayes n = new NaiveBayes();
 //		n.runClassifier(n, options);
