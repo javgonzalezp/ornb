@@ -29,18 +29,18 @@ public class Forest {
 	
 	public void addElement(String element, String _class){
 	//public void addElement(Instance instance){
-		for(int i=0; i<numNB; i++){
-			int a = (int) (Math.random() * 2);
-			NaiveBayes nb = forest.get(i);
-			if(a==1)
-				nb.addElement(element, _class);
-		}
-		//NaiveBayes nb = forest.get((int) (Math.random() * numNB));
-		//if(naiveb>=numNB)
-			//naiveb=0;
-		//NaiveBayes nb = forest.get(naiveb);
-		//nb.addElement(element, _class);
-		//naiveb++;
+//		for(int i=0; i<numNB; i++){
+//			int a = (int) (Math.random() * 2);
+//			NaiveBayes nb = forest.get(i);
+//			if(a==1)
+//				nb.addElement(element, _class);
+//		}
+		NaiveBayes nb = forest.get((int) (Math.random() * numNB));
+//		if(naiveb>=numNB)
+//			naiveb=0;
+//		NaiveBayes nb = forest.get(naiveb);
+		nb.addElement(element, _class);
+//		naiveb++;
 	}
 
 	public double[] classify(String element, int features) throws Exception {
@@ -54,12 +54,12 @@ public class Forest {
     			sums[j] += newProbs[j];
     		}
 		
-	    if (Utils.eq(Utils.sum(sums), 0)) {
+//	    if (Utils.eq(Utils.sum(sums), 0)) {
+//	    	return sums;
+//	    } else {
+//	    	Utils.normalize(sums);
 	    	return sums;
-	    } else {
-	    	//Utils.normalize(sums);
-	    	return sums;
-	    }
+//	    }
 
 	}
 
