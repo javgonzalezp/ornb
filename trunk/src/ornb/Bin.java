@@ -39,6 +39,11 @@ public class Bin {
 	public void addFrequency(){
 		frequency++;
 	}
+	
+	public void minusFrequency(){
+		frequency--;
+	}
+	
 	/**
 	 * Method that returns the frequency of the bin
 	 * @return frequency

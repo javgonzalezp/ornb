@@ -35,12 +35,12 @@ public class Forest {
 //			if(a==1)
 //				nb.addElement(element, _class);
 //		}
-		NaiveBayes nb = forest.get((int) (Math.random() * numNB));
-//		if(naiveb>=numNB)
-//			naiveb=0;
-//		NaiveBayes nb = forest.get(naiveb);
+//		NaiveBayes nb = forest.get((int) (Math.random() * numNB));
+		if(naiveb>=numNB)
+			naiveb=0;
+		NaiveBayes nb = forest.get(naiveb);
 		nb.addElement(element, _class);
-//		naiveb++;
+		naiveb++;
 	}
 
 	public double[] classify(String element, int features) throws Exception {
@@ -61,6 +61,12 @@ public class Forest {
 	    	return sums;
 //	    }
 
+	}
+	
+	public void forgetting(NaiveBayes nb, Instance instance){
+		double c = instance.classValue();
+		nb.forgetting(instance);
+		nb.addElement(instance.toString(), instance.stringValue(instance.numValues()-1));
 	}
 
 	/*

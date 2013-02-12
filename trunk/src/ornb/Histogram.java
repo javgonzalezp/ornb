@@ -197,5 +197,15 @@ public class Histogram {
 		
 		return (int) sum;
 	}
+	public void updateBin(double random) {
+		double min = Float.POSITIVE_INFINITY;
+		int i;
+		for(i=0; i<size; i++){
+			double aux = Math.abs(random-bins.get(i).getBin()); 
+			if(aux<min)
+				min=i;
+		}
+		bins.get(i).minusFrequency();
+	}
 	
 }

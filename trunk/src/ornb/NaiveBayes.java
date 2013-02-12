@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 
+import weka.core.Instance;
 import weka.core.Utils;
 
 public class NaiveBayes {
@@ -123,17 +124,23 @@ public class NaiveBayes {
 	    for(int i=0; i<attributes.length; i++){
 	    	//String[] a = s[values[i]].split(":");
 	    	double att = Double.parseDouble(s[i]);
-	    	double temp = 0, max = 0;
+	    	double temp = 0;
 	    	for (int j = 0; j < classes.length; j++) {
 	    		Histogram h = histograms.get(i+numAttributes*j);
+	    		double stddev = h.getStandardDeviation();
 	    		//las multiplicaciones de los mean y stdv
 	    		//
-	    		if(h.getStandardDeviation()!=0.0){
-	    			NormalDistribution n = new NormalDistribution(h.getMean(), h.getStandardDeviation());
+	    		NormalDistribution n;
+	    		if(stddev!=0.0){
+//	    			NormalDistribution n = new NormalDistribution(h.getMean(), stddev);
+	    			n = new NormalDistribution(h.getMean(), stddev);
 	    			temp = n.density(att);
 	    		}
-	    		else
-	    			temp=1.0;
+//	    		else
+//	    			stddev=0.0000000000000001;
+//	    			n = new NormalDistribution(h.getMean(), stddev);
+//	    			temp = n.density(att);
+//	    			temp=0.000001;
 	    		//distribucion normal
 	    		//double aux = -(Math.pow(att-h.getMean(),2)/2*Math.pow(h.getStandardDeviation(), 2));
 	    		//double aux2= 1/Math.sqrt(2*Math.PI*Math.pow(h.getStandardDeviation(), 2));
@@ -164,6 +171,20 @@ public class NaiveBayes {
 	    return probs;
 	  }
 
+		public void forgetting(Instance instance){
+			double c = instance.classValue();
+			
+			for(int i=0; i<attributes.length; i++){
+				Histogram h = histograms.get((int) (i+numAttributes*c));
+				double u = h.getMean();
+				double devstd = h.getStandardDeviation();
+				NormalDistribution n = new NormalDistribution(u, devstd);
+				double random = n.sample();
+				h.updateBin(random);
+			}
+			
+		}
+	  
 	public boolean checkValue(int[] values, int z) {
 		if(z==0)
 			return false;
