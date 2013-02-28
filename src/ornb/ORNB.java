@@ -145,7 +145,6 @@ public class ORNB{
 		    while (enu.hasMoreElements()) {
 		    	 Instance instance = (Instance) enu.nextElement();
 		    	 f.addElement(instance.toString(), instance.stringValue(instance.numValues()-1));
-		    	 System.out.println(instance.classValue());
 		    	 //agregar a prior
 		    	 m_ClassPriors[(int) instance.classValue()] += instance.weight();
 		         m_ClassPriorsSum += instance.weight();
