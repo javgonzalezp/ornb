@@ -103,12 +103,13 @@ public class NaiveBayes {
 		  String[] s = element.split(",");
 		  //String[] s = element.split(" ");
 
-	    double [] probs = getProbability();
+//	    double [] probs = getProbability();
+		double [] probs = new double[classes.length];
 	    
-	    /*ArrayList<String> v = new ArrayList<String>();
-	    for(int i=0; i<attributes.length; i++)
-	    	v.add(attributes[i]);
-	    
+//	    ArrayList<String> v = new ArrayList<String>();
+	    for(int i=0; i<classes.length; i++)
+	    	probs[i]=1;
+	    /*
 	    int[] values = new int[features];
 	    for(int i=0; i<features; i++)
 	    	values[i]=-1;
@@ -167,7 +168,7 @@ public class NaiveBayes {
 	    }
 
 	    // Display probabilities*/
-//	    Utils.normalize(probs);
+	    Utils.normalize(probs);
 	    return probs;
 	  }
 

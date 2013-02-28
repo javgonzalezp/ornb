@@ -5,5 +5,6 @@
 	<classpathentry kind="lib" path="/home/javgonzalez/commons-math3-3.0/commons-math3-3.0.jar"/>
 	<classpathentry kind="lib" path="/home/javgonzalez/weka-3-7-7/weka.jar" sourcepath="/home/javgonzalez/weka-3-7-7/weka-src.jar"/>
 	<classpathentry kind="lib" path="/home/javgonzalez/weka-3-7-7/weka-src.jar"/>
+	<classpathentry kind="lib" path="/home/javgonzalez/commons-math3-3.0/commons-math3-3.0-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
