@@ -1,17 +1,29 @@
 package ornb;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 
+import weka.core.Attribute;
 import weka.core.Instance;
+import weka.core.Instances;
 import weka.core.Utils;
+import weka.estimators.DiscreteEstimator;
+import weka.estimators.Estimator;
+import weka.estimators.KernelEstimator;
+import weka.estimators.NormalEstimator;
 
 public class NaiveBayes {
 	int numClasses, numAttributes, numBins;
 	ArrayList<Histogram> histograms;
 	String[] classes;
 	String[] attributes;
+	Instances m_Instances;
+	Estimator [][] m_Distributions;
+	Estimator m_ClassDistribution;
+	static final double DEFAULT_NUM_PRECISION = 0.01;
+	boolean m_UseKernelEstimator = false;
 	
 	public NaiveBayes(String[] classes, String[] attributes, int numBins){
 		this.numClasses = classes.length;
@@ -98,13 +110,13 @@ public class NaiveBayes {
 		return probs;
 	}
 	
-	  public double [] distributionForInstance(String element, int features) 
+	public double [] distributionForInstance(String element, int features) 
 	    throws Exception {
 		  String[] s = element.split(",");
 		  //String[] s = element.split(" ");
 
-//	    double [] probs = getProbability();
-		double [] probs = new double[classes.length];
+	    double [] probs = getProbability();
+//		double [] probs = new double[classes.length];
 	    
 //	    ArrayList<String> v = new ArrayList<String>();
 	    for(int i=0; i<classes.length; i++)
@@ -136,12 +148,32 @@ public class NaiveBayes {
 //	    			NormalDistribution n = new NormalDistribution(h.getMean(), stddev);
 	    			n = new NormalDistribution(h.getMean(), stddev);
 	    			temp = n.density(att);
+//	    			double aux1 = n.density(1);
+//	    			double aux2 = n.density(2);
+//	    			double aux3 = n.density(3);
+//	    			double aux5 = h.getMean();
+//	    			double aux6 = aux1+aux2;
+//	    			double aux7 = aux1+aux2+aux3;
+//	    			double aux4 = 1;
 	    		}
-//	    		else
-//	    			stddev=0.0000000000000001;
-//	    			n = new NormalDistribution(h.getMean(), stddev);
-//	    			temp = n.density(att);
-//	    			temp=0.000001;
+	    		else{
+	    			h.addBins(h.getMean());
+	    			stddev = h.getStandardDeviation();
+	    			n = new NormalDistribution(h.getMean(), stddev);
+	    			temp = n.density(att);
+	    			if(temp==0.0)
+	    				temp=0.00000001;
+////	    			if(att==h.getMean()){
+////	    				temp=1.6;
+//	    				h.addBin(h.getMean());
+//	    				stddev = h.getStandardDeviation();
+//	    				n = new NormalDistribution(h.getMean(), stddev);
+//		    			temp = n.density(att);
+////	    			}
+//	    				
+////	    			else
+////	    				temp=0.001;
+	    		}
 	    		//distribucion normal
 	    		//double aux = -(Math.pow(att-h.getMean(),2)/2*Math.pow(h.getStandardDeviation(), 2));
 	    		//double aux2= 1/Math.sqrt(2*Math.PI*Math.pow(h.getStandardDeviation(), 2));
@@ -168,24 +200,10 @@ public class NaiveBayes {
 	    }
 
 	    // Display probabilities*/
-	    Utils.normalize(probs);
+//	    Utils.normalize(probs);
 	    return probs;
 	  }
 
-		public void forgetting(Instance instance){
-			double c = instance.classValue();
-			
-			for(int i=0; i<attributes.length; i++){
-				Histogram h = histograms.get((int) (i+numAttributes*c));
-				double u = h.getMean();
-				double devstd = h.getStandardDeviation();
-				NormalDistribution n = new NormalDistribution(u, devstd);
-				double random = n.sample();
-				h.updateBin(random);
-			}
-			
-		}
-	  
 	public boolean checkValue(int[] values, int z) {
 		if(z==0)
 			return false;
@@ -197,4 +215,5 @@ public class NaiveBayes {
 		
 		return true;
 	}
+	
 }

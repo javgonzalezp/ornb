@@ -16,7 +16,7 @@ public class Bin {
 	int frequency;
 	
 	public Bin(double d, int frequency){
-		this.bin = (float) d;
+		this.bin = d;
 		this.frequency = frequency;
 	}
 	/**

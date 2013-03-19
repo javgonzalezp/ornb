@@ -54,20 +54,15 @@ public class Forest {
     			sums[j] += newProbs[j];
     		}
 		
-//	    if (Utils.eq(Utils.sum(sums), 0)) {
-//	    	return sums;
-//	    } else {
+	    if (Utils.eq(Utils.sum(sums), 0)) {
+	    	return sums;
+	    } else {
 	    	Utils.normalize(sums);
 	    	return sums;
-//	    }
+	    }
 
 	}
 	
-	public void forgetting(NaiveBayes nb, Instance instance){
-		nb.forgetting(instance);
-		nb.addElement(instance.toString(), instance.stringValue(instance.numValues()-1));
-	}
-
 	/*
 	public double[] distributionForInstance(Instance instance) throws Exception {
 
