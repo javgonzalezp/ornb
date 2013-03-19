@@ -17,6 +17,8 @@ public class Histogram {
 	int size;
 	
 	public Histogram(int size){
+		if(size==-1)
+			size=100;
 		bins = new ArrayList<Bin>();
 		this.size = size;
 	}
@@ -168,44 +170,20 @@ public class Histogram {
 		
 		return stdev;
 	}
-
-	public int sumProcedure(double num){
-		Bin p = new Bin(num, 0);
-		int pos = -1; 
-		double freq_b = 0, sum = 0;
+	
+	/**
+	 * Method that allows to add bins to an histogram to avoid that the standard deviation equals zero
+	 * @param mean
+	 */
+	public void addBins(double mean) {
+		Bin b = new Bin(mean-0.001, 1);
+		bins.add(b);
+		b = new Bin(mean, 1);
+		bins.get(0).addFrequency();
+		b = new Bin(mean+0.001, 1);
+		bins.add(b);
 		
-		for(int i=1; i<size; i++){
-			if(bins.get(i-1).getBin()<=p.getBin() && p.getBin()<bins.get(i).getBin())
-				pos=i;
-		}
 		
-		Bin x = bins.get(pos-1); //i
-		Bin y = bins.get(pos); //i+1
-		
-		double aux = y.getFrequency()-x.getFrequency();
-		double aux2 = y.getBin()-x.getBin();
-		double aux3= p.getBin()-x.getBin();
-		
-		freq_b = x.getFrequency() + (aux*aux3/aux2);
-		
-		sum = ((x.getFrequency() + freq_b)/2)*((p.getBin()-x.getBin())/(y.getBin()-x.getBin()));
-		
-		for(int j=0; j<pos-1; j++)
-			sum+=bins.get(j).getFrequency();
-		
-		sum+=x.getFrequency()/2;
-		
-		return (int) sum;
-	}
-	public void updateBin(double random) {
-		double min = Float.POSITIVE_INFINITY;
-		int i;
-		for(i=0; i<size; i++){
-			double aux = Math.abs(random-bins.get(i).getBin()); 
-			if(aux<min)
-				min=i;
-		}
-		bins.get(i).minusFrequency();
 	}
 	
 }
