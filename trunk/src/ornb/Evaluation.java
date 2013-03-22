@@ -606,4 +606,12 @@ public class Evaluation {
 		output.append(printConfusionMatrix());
 		return output.toString();
 	}
+
+	public void updateValues(double contEntrenamiento, double[] m_ClassPriors2,
+			double m_ClassPriorsSum2) {
+		total_instances = contEntrenamiento;
+		m_ClassPriors = m_ClassPriors2;
+		m_ClassPriorsSum = m_ClassPriorsSum2;
+		
+	}
 }

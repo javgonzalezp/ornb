@@ -1,9 +1,13 @@
 package onb;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 
+import ornb.Evaluation;
 import ornb.Histogram;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.core.Instance;
@@ -14,14 +18,20 @@ import weka.core.converters.ConverterUtils.DataSource;
 
 public class ONB {
 	int numClasses, numAttributes, c = 0;
-	double tamVentana, minEntrenamiento, contEntrenamiento=0, limite, aciertos=0, errores=0, total=0;
+	double tamVentana, minEntrenamiento, contEntrenamiento=0, limite, aciertos=0, errores=0, total=0, total_instancias=0;
 	ArrayList<Histogram> histograms;
 	String[] classes;
 	String[] attributes;
 	Ventana referencia, actual;
 	double[] sum;
+	FileWriter writerEI;
+	FileWriter writerVI;
+	double[] m_ClassPriors;
+	double m_ClassPriorsSum;
+	double[][] matrix;
+	Evaluation ev;
 	
-	public ONB(String[] classes, String[] attributes, double tamVentana, double minEntrenamiento, double limite){
+	public ONB(String[] classes, String[] attributes, double tamVentana, double minEntrenamiento, double limite) throws IOException{
 		this.numClasses = classes.length;
 		this.numAttributes = attributes.length;
 		histograms = new ArrayList<Histogram>();
@@ -34,6 +44,28 @@ public class ONB {
 		this.limite = limite;
 		this.sum = new double[numClasses];
 		initializeHistograms();
+		writerEI = new FileWriter("entropia-instancias.dat");
+		writerVI = new FileWriter("ventana-instancias.dat");
+		
+		  //Para la evaluacion weka
+		m_ClassPriors = new double[numClasses];
+		for (int i = 0; i < numClasses; i++) {
+			m_ClassPriors[i] = 1;
+		}
+		m_ClassPriorsSum = numClasses;
+		matrix = initializeConfusionMatrix(numClasses);
+		ev = new ornb.Evaluation(0, numClasses, m_ClassPriors, m_ClassPriorsSum, classes);
+	}
+	
+	public static double[][] initializeConfusionMatrix(int i) {
+		double[][] matrix = new double[i][i];
+		
+		for(int j=0; j<i; j++){
+			for(int k=0; k<i; k++)
+				matrix[j][k] = 0;
+		}
+		
+		return matrix;
 	}
 	
 	public void initializeHistograms(){
@@ -43,6 +75,7 @@ public class ONB {
 	//aqui se debe hacer todos los calculos para saber si se produce concept drift y para saber si se debe 
 	//enviar a entrenar o clasificar la instancia correspondiente 
 	public void readInstance(Instance instance) throws Exception{
+		total++;
 		if(contEntrenamiento<minEntrenamiento){
 			addElement(instance.toString(), instance.stringValue(instance.numValues()-1));
 			for(int i=0; i<classes.length; i++){
@@ -50,10 +83,14 @@ public class ONB {
 					sum[i]++;
 			}
 			contEntrenamiento++;
+			
+			//EVALUACION WEKA
+			m_ClassPriors[(int) instance.classValue()] += instance.weight();
+	        m_ClassPriorsSum += instance.weight();
 		}
 		else{
+			total_instancias++;
 			double[] a = distributionForInstance(instance.toString(), numAttributes);
-			total++;
 //			referencia.addClass(instance.stringValue(instance.numValues()-1));
 //			actual.addClass(instance.stringValue(instance.numValues()-1));
 			if(instance.classValue()==(double)Utils.maxIndex(a)){
@@ -62,7 +99,15 @@ public class ONB {
 				actual.addHit();
 				aciertos++;
 				addElement(instance.toString(), instance.stringValue(instance.numValues()-1));
+				for(int i=0; i<classes.length; i++){
+					if(classes[i].equalsIgnoreCase(instance.stringValue(instance.numValues()-1)))
+						sum[i]++;
+				}
 				contEntrenamiento++;
+				
+				//EVALUACION WEKA
+				m_ClassPriors[(int) instance.classValue()] += instance.weight();
+		        m_ClassPriorsSum += instance.weight();
 			}
 			else{
 				referencia.addMiss();
@@ -76,29 +121,39 @@ public class ONB {
 //				System.out.println("hola");
 			double entropia_referencia = referencia.getEntropia();
 			double entropia_actual = actual.getEntropia();
-//			double diff = Math.abs(entropia_actual)-Math.abs(entropia_referencia);
+			double diff = Math.abs(Math.abs(entropia_actual)-Math.abs(entropia_referencia));
 //			double diff2 = Math.abs(entropia_referencia)-Math.abs(entropia_actual);
-			if(Math.abs(Math.abs(entropia_actual)-Math.abs(entropia_referencia))>limite){
+//			saveToFiles(entropia_actual, actual.total, total);
+			if(diff>limite){
+//			if(diff>limite){
 				//reseteo de los numeros
 				c++;
 				contEntrenamiento = 0;
 				referencia.resetCounters();
 				actual.resetCounters();
+				for(int i=0; i<sum.length; i++){
+					sum[i]=0;
+				}
 			}
-			
+			//EVALUACION WEKA
+			ev.updateValues(total_instancias, m_ClassPriors, m_ClassPriorsSum);
+			ev.updateNumericScores(a, instance.classValue(), instance.weight());
+			ev.setPredictions(instance, a);
+	    	matrix[Utils.maxIndex(a)][(int) instance.classValue()]++;
 		}
 		
 	}
 	
+	private void saveToFiles(double diff, double tamaño, double total2) throws IOException {
+		writerEI.append(diff+"    "+total2+"\n");
+		writerVI.append(tamaño+"    "+total2+"\n");
+	}
+
 	public void addElement(String element, String c){
 		String[] s = element.split(",");
-		String _class = c;
-		
-		if(classes[0].equalsIgnoreCase(_class))	
-			_class = c;
 		
 		for(int i=0; i<classes.length; i++){
-			if(classes[i].equalsIgnoreCase(_class)){
+			if(classes[i].equalsIgnoreCase(c)){
 				for(int j=0; j<s.length-1; j++)
 					histograms.get((numAttributes*i)+j).updateHistogram(Double.parseDouble(s[j]));
 				break;
@@ -191,7 +246,7 @@ public class ONB {
 		  int minEntrenamiento = Integer.parseInt(argv[1]);
 		  int tamVentana = Integer.parseInt(argv[2]);
 		  double difEntropia = Double.parseDouble(argv[3]);
-    
+   
 		  DataSource loader;
 	  	  Instances data;
 	  	
@@ -210,7 +265,6 @@ public class ONB {
 		  for(int i=0; i<data.numClasses(); i++)
 			  classes[i]=data.attribute(data.numAttributes()-1).value(i);
 			
-		  
 		  ONB onb = new ONB(classes, attributes, tamVentana, minEntrenamiento, difEntropia);
 		  Enumeration enu = data.enumerateInstances();
 		    //for(int j=0; j<100; j++){
@@ -219,9 +273,16 @@ public class ONB {
 			  Instance instance = (Instance) enu.nextElement();
 			  onb.readInstance(instance);
 		  }
-		  System.out.println(onb.aciertos*100/onb.total);
-		  System.out.println(onb.errores*100/onb.total);
-		  System.out.println(onb.c);
+		  onb.writerEI.flush();
+		  onb.writerEI.close();
+		  onb.writerVI.flush();
+		  onb.writerVI.close();
+//		  System.out.println(onb.aciertos*100/onb.total_instancias);
+//		  System.out.println(onb.errores*100/onb.total_instancias);
+		  onb.ev.setCorrect(onb.aciertos);
+		  onb.ev.setMatrix(onb.matrix);
+		  System.out.println(onb.ev.toString());
+		  System.out.println("Número de cambios: "+onb.c);
 		  //}
 	  }
 }
