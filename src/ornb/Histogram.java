@@ -18,7 +18,7 @@ public class Histogram {
 	
 	public Histogram(int size){
 		if(size==-1)
-			size=100;
+			size=10;
 		bins = new ArrayList<Bin>();
 		this.size = size;
 	}
