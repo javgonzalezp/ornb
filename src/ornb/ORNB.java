@@ -1,15 +1,9 @@
 package ornb;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.util.Enumeration;
 
-import weka.classifiers.Evaluation;
-import weka.classifiers.bayes.NaiveBayes;
 import weka.core.Instance;
 import weka.core.Instances;
-import weka.core.SparseInstance;
 import weka.core.Utils;
 import weka.core.converters.ConverterUtils.DataSource;
 

@@ -1,7 +1,9 @@
 package onb;
 
 public class Ventana {
-	double tamaño, total=0, aciertos=0, errores=0;
+	double tamaño;
+	public double total=0;
+	double aciertos=0, errores=0;
 	double probAciertos, probErrores;
 	String[] classes;
 	int[] entropia;

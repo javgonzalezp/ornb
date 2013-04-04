@@ -1,8 +1,10 @@
-package onb;
+package ornb_ol;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+
+import onb.Ventana;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 
@@ -16,7 +18,7 @@ import weka.core.converters.ConverterUtils.DataSource;
 
 public class ONB {
 	int numClasses, numAttributes, c = 0;
-	double tamVentana, minEntrenamiento, contEntrenamiento=0, limite, aciertos=0, errores=0, total=0, total_instancias=0;
+	public double tamVentana, minEntrenamiento, contEntrenamiento=0, limite, aciertos=0, errores=0, total=0, total_instancias=0;
 	ArrayList<Histogram> histograms;
 	String[] classes;
 	String[] attributes;
@@ -74,7 +76,8 @@ public class ONB {
 	}
 	//aqui se debe hacer todos los calculos para saber si se produce concept drift y para saber si se debe 
 	//enviar a entrenar o clasificar la instancia correspondiente 
-	public void readInstance(Instance instance) throws Exception{
+	public double[] readInstance(Instance instance) throws Exception{
+		double[] a = null;
 		total++;
 		if(contEntrenamiento<minEntrenamiento){
 			addElement(instance.toString(), instance.stringValue(instance.numValues()-1));
@@ -83,14 +86,14 @@ public class ONB {
 					sum[i]++;
 			}
 			contEntrenamiento++;
-			saveToFiles(0.0, 0.0, total);
+//			saveToFiles(0.0, 0.0, total);
 			//EVALUACION WEKA
 //			m_ClassPriors[(int) instance.classValue()] += instance.weight();
 //	        m_ClassPriorsSum += instance.weight();
 		}
 		else{
 			total_instancias++;
-			double[] a = distributionForInstance(instance.toString(), numAttributes);
+			a = distributionForInstance(instance.toString(), numAttributes);
 //			referencia.addClass(instance.stringValue(instance.numValues()-1));
 //			actual.addClass(instance.stringValue(instance.numValues()-1));
 			if(instance.classValue()==(double)Utils.maxIndex(a)){
@@ -144,6 +147,7 @@ public class ONB {
 //			ev.setPredictions(instance, a);
 //	    	matrix[Utils.maxIndex(a)][(int) instance.classValue()]++;
 		}
+		return a;
 		
 	}
 	
@@ -240,53 +244,4 @@ public class ONB {
 		  return retProbs;
 	}
 
-	public static void main(String[] argv) throws Exception{
-		  if (argv.length != 4) {
-			  System.out.println ("Uso correcto: java -jar archivo minEntrenamiento tamVentana difEntropia");
-			  System.exit(0);
-			 }
-		  String file = argv[0];
-		  int minEntrenamiento = Integer.parseInt(argv[1]);
-		  int tamVentana = Integer.parseInt(argv[2]);
-		  double difEntropia = Double.parseDouble(argv[3]);
-   
-		  DataSource loader;
-	  	  Instances data;
-	  	
-		  loader = new DataSource(file);
-		  data = loader.getDataSet();
-			
-		  if (data.classIndex() == -1)
-			  data.setClassIndex(data.numAttributes()-1);
-
-		  String[] attributes = new String [data.numAttributes()-1];
-		  for(int i=0; i<data.numAttributes()-1; i++)
-			  attributes[i]=data.attribute(i).name();
-
-			//obtain the classes of the arff
-		  String[] classes = new String [data.numClasses()];
-		  for(int i=0; i<data.numClasses(); i++)
-			  classes[i]=data.attribute(data.numAttributes()-1).value(i);
-			
-		  ONB onb = new ONB(classes, attributes, tamVentana, minEntrenamiento, difEntropia);
-		  Enumeration enu = data.enumerateInstances();
-		    //for(int j=0; j<100; j++){
-		    	//enu = data.enumerateInstances();
-		  while (enu.hasMoreElements()) {
-			  Instance instance = (Instance) enu.nextElement();
-			  onb.readInstance(instance);
-		  }
-		  onb.writerEI.flush();
-		  onb.writerEI.close();
-		  onb.writerVI.flush();
-		  onb.writerVI.close();
-//		  System.out.println(onb.aciertos*100/onb.total_instancias);
-//		  System.out.println(onb.errores*100/onb.total_instancias);
-//		  onb.ev.setCorrect(onb.aciertos);
-//		  onb.ev.setMatrix(onb.matrix);
-//		  System.out.println(onb.ev.toString());
-		  System.out.println("Total Instancias Clasificadas: "+onb.total_instancias);
-		  System.out.println("Número de cambios: "+onb.c);
-		  //}
-	  }
 }
