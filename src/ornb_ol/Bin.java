@@ -1,4 +1,4 @@
-package ornb;
+package ornb_ol;
 
 /**
  * Class that saves the data of a bin and its frequency in a histogram

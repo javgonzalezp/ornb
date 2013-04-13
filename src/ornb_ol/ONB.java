@@ -1,35 +1,27 @@
 package ornb_ol;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Enumeration;
-
-import onb.Ventana;
+import onb.Window;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 
-import ornb.Evaluation;
-import ornb.Histogram;
 import weka.core.Instance;
-import weka.core.Instances;
 import weka.core.Utils;
-import weka.core.converters.ConverterUtils.DataSource;
 
+/**
+ * Class that manages the ONB algorithm and all its functions
+ * @author javgonzalez
+ *
+ */
 
 public class ONB {
 	int numClasses, numAttributes, c = 0;
 	public double tamVentana, minEntrenamiento, contEntrenamiento=0, limite, aciertos=0, errores=0, total=0, total_instancias=0;
 	ArrayList<Histogram> histograms;
-	String[] classes;
-	String[] attributes;
-	Ventana referencia, actual;
+	String[] classes, attributes;
+	Window referencia, actual;
 	double[] sum;
-	FileWriter writerEI;
-	FileWriter writerVI;
-	double[] m_ClassPriors;
-	double m_ClassPriorsSum;
-	double[][] matrix;
-	Evaluation ev;
+	boolean ready = false;
 	
 	public ONB(String[] classes, String[] attributes, double tamVentana, double minEntrenamiento, double limite) throws IOException{
 		this.numClasses = classes.length;
@@ -38,27 +30,19 @@ public class ONB {
 		this.classes = classes;
 		this.attributes = attributes;
 		this.tamVentana = tamVentana;
-		referencia = new Ventana(tamVentana, true, classes);
-		actual = new Ventana(tamVentana, false, classes);
+		referencia = new Window(tamVentana, true, classes);
+		actual = new Window(tamVentana, false, classes);
 		this.minEntrenamiento = minEntrenamiento;
 		this.limite = limite;
 		this.sum = new double[numClasses];
 		initializeHistograms();
-		writerEI = new FileWriter("entropia-instancias.dat");
-		writerEI.append("Entropía actual    Instancia\n");
-		writerVI = new FileWriter("ventana-instancias.dat");
-		writerVI.append("Ventana actual    Instancia\n");
-		
-		  //Para la evaluacion weka
-		m_ClassPriors = new double[numClasses];
-		for (int i = 0; i < numClasses; i++) {
-			m_ClassPriors[i] = 1;
-		}
-		m_ClassPriorsSum = numClasses;
-		matrix = initializeConfusionMatrix(numClasses);
-		ev = new ornb.Evaluation(0, numClasses, m_ClassPriors, m_ClassPriorsSum, classes);
 	}
 	
+	/**
+	 * Method that initializes the confusion matrix for the evaluation
+	 * @param numClasses
+	 * @return the confusion matrix with the values equal to zero
+	 */
 	public static double[][] initializeConfusionMatrix(int i) {
 		double[][] matrix = new double[i][i];
 		
@@ -70,12 +54,20 @@ public class ONB {
 		return matrix;
 	}
 	
+	/**
+	 * Method that initializes the array with all the histograms for the dataset
+	 */
 	public void initializeHistograms(){
 		for(int i=0; i<numClasses*numAttributes; i++)
 			histograms.add(new Histogram(-1));
 	}
-	//aqui se debe hacer todos los calculos para saber si se produce concept drift y para saber si se debe 
-	//enviar a entrenar o clasificar la instancia correspondiente 
+
+	/**
+	 * Method that reads an instance of the dataset and decides what is the next step, if it uses it to train
+	 * the classifier or does the classification of the instance
+	 * @param instance
+	 * @throws Exception
+	 */
 	public double[] readInstance(Instance instance) throws Exception{
 		double[] a = null;
 		total++;
@@ -86,18 +78,12 @@ public class ONB {
 					sum[i]++;
 			}
 			contEntrenamiento++;
-//			saveToFiles(0.0, 0.0, total);
-			//EVALUACION WEKA
-//			m_ClassPriors[(int) instance.classValue()] += instance.weight();
-//	        m_ClassPriorsSum += instance.weight();
 		}
 		else{
+			ready = true;
 			total_instancias++;
 			a = distributionForInstance(instance.toString(), numAttributes);
-//			referencia.addClass(instance.stringValue(instance.numValues()-1));
-//			actual.addClass(instance.stringValue(instance.numValues()-1));
 			if(instance.classValue()==(double)Utils.maxIndex(a)){
-
 				referencia.addHit();
 				actual.addHit();
 				aciertos++;
@@ -107,10 +93,6 @@ public class ONB {
 						sum[i]++;
 				}
 				contEntrenamiento++;
-				
-				//EVALUACION WEKA
-//				m_ClassPriors[(int) instance.classValue()] += instance.weight();
-//		        m_ClassPriorsSum += instance.weight();
 			}
 			else{
 				referencia.addMiss();
@@ -119,19 +101,12 @@ public class ONB {
 			}
 			referencia.updateProbs();
 			actual.updateProbs();
-			//calculo entropia
-//			if(referencia.total==500)
-//				System.out.println("hola");
 			double entropia_referencia = referencia.getEntropia();
 			double entropia_actual = actual.getEntropia();
 			double diff = Math.abs(Math.abs(entropia_actual)-Math.abs(entropia_referencia));
-//			double diff2 = Math.abs(entropia_referencia)-Math.abs(entropia_actual);
-			saveToFiles(entropia_actual, actual.total, total);
 			if(diff>limite){
-//			if(diff>limite){
-				//reseteo de los numeros
+				ready=false;
 				c++;
-				System.out.println(total);
 				contEntrenamiento = 0;
 				referencia.resetCounters();
 				actual.resetCounters();
@@ -141,21 +116,15 @@ public class ONB {
 				histograms = new ArrayList<Histogram>();
 				initializeHistograms();
 			}
-			//EVALUACION WEKA
-//			ev.updateValues(total_instancias, m_ClassPriors, m_ClassPriorsSum);
-//			ev.updateNumericScores(a, instance.classValue(), instance.weight());
-//			ev.setPredictions(instance, a);
-//	    	matrix[Utils.maxIndex(a)][(int) instance.classValue()]++;
 		}
 		return a;
-		
 	}
 	
-	private void saveToFiles(double diff, double tamaño, double total2) throws IOException {
-		writerEI.append(diff+"    "+total2+"\n");
-		writerVI.append(tamaño+"    "+total2+"\n");
-	}
-
+	/**
+	 * Method that adds an instance to the corresponding histogram
+	 * @param element
+	 * @param _class
+	 */
 	public void addElement(String element, String c){
 		String[] s = element.split(",");
 		
@@ -168,6 +137,12 @@ public class ONB {
 		}
 	}
 	
+	/**
+	 * Method that calculates the mean of a particular histogram
+	 * @param _attribute
+	 * @param _class
+	 * @return the value of the mean for a histogram
+	 */
 	public double calculateMean(String _attribute, String _class){
 		double m = 0;
 		for(int i=0; i<classes.length; i++){
@@ -184,6 +159,12 @@ public class ONB {
 		return m;
 	}
 	
+	/**
+	 * Method that calculates the standard deviation for a particular histogram
+	 * @param _attribute
+	 * @param _class
+	 * @return the value of the standard deviation for a histogram
+	 */
 	public double calculateStandarDeviation(String _attribute, String _class){
 		double sd = 0;
 		for(int i=0; i<classes.length; i++){
@@ -200,14 +181,18 @@ public class ONB {
 		return sd;
 	}
 	
+	/**
+	 * Method that calculates the distribution of the model trained by the classifier for a instance
+	 * @param element
+	 * @param features
+	 * @return an array with the posterior probabilities of the instance
+	 * @throws Exception
+	 */
 	public double [] distributionForInstance(String element, int features) throws Exception {
 	  String[] s = element.split(",");
 
 	  double [] probs = getProbs();
-//	  for(int a=0; a<numClasses; a++)
-//		  probs[a]=1;
-    
-		for(int i=0; i<attributes.length; i++){
+	  for(int i=0; i<attributes.length; i++){
 			double att = Double.parseDouble(s[i]);
 			double temp = 0;
 			for (int j = 0; j < classes.length; j++) {
@@ -236,6 +221,10 @@ public class ONB {
 		    return probs;
     	  }
 
+	/**
+	 * Method that returns an array with the prior values of the trained instances for the classifier
+	 * @return an array with the prior probabilities 
+	 */
 	  public double[] getProbs() {
 		  double[] retProbs = new double[numClasses];
 		  for(int i=0; i<retProbs.length; i++)
