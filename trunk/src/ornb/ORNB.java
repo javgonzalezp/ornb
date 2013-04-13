@@ -154,7 +154,7 @@ public class ORNB{
 		if (data.classIndex() == -1)
 			   data.setClassIndex(data.numAttributes()-1);
 
-		ornb.Evaluation ev = new ornb.Evaluation(data.numInstances(), data.numClasses(), m_ClassPriors, m_ClassPriorsSum, classes);
+		ornb_ol.Evaluation ev = new ornb_ol.Evaluation(data.numInstances(), data.numClasses(), m_ClassPriors, m_ClassPriorsSum, classes);
 				
 	    //testing con iris
 		//letter.scale.t (testing)

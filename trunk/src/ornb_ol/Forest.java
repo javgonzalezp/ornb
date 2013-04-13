@@ -8,12 +8,18 @@ import ornb_ol.ONB;
 import weka.core.Instance;
 import weka.core.Utils;
 
+/**
+ * Class that manages all the characteristics of the forest in the ORNB classifier
+ * @author javgonzalez
+ *
+ */
 public class Forest {
 	ArrayList<ONB> forest;
 	int numNB, numBins, minEntrenamiento, tamVentana;
-	double diffEntropia;
-	String[] classes;
-	String[] attributes;
+	double diffEntropia, aciertos = 0, total = 0;
+	String[] classes, attributes;
+	double[][] matrix;
+	double [] sums;
 	
 	public Forest(int numNB, String[] classes, String[] attributes, int minEntrenamiento, int tamVentana, double difEntropia){
 		forest = new ArrayList<ONB>();
@@ -23,83 +29,85 @@ public class Forest {
 		this.minEntrenamiento = minEntrenamiento;
 		this.tamVentana = tamVentana;
 		this.diffEntropia = difEntropia;
+		sums = new double [classes.length];
+		matrix = initializeConfusionMatrix(classes.length);
 	}
 
+	/**
+	 * Method that initializes the ONB in the forest 
+	 * @throws IOException
+	 */
 	public void initializeForest() throws IOException{
 		for(int i=0; i<numNB; i++)
 			forest.add(new ONB(classes, attributes, tamVentana, minEntrenamiento, diffEntropia));
 	}
 	
-	public void training(Instance instance) throws Exception{
-		for(int i=0; i<numNB; i++){
-			int random = (int) (Math.random() * 2);
-			ONB onb = forest.get(i);
-			if(random==1)
-				onb.readInstance(instance);
-		}
+	/**
+	 * Method that manages the training of the instances for the forest
+	 * @param instance
+	 * @param onb
+	 * @throws Exception
+	 */
+	public void training(Instance instance, ONB onb) throws Exception{
+		int random = (int) (Math.random() * 2);
+		if(random==1 && !onb.ready)
+			onb.readInstance(instance);
 	}
 
-	public double[] classify(Instance instance) throws Exception {
-		double [] sums = new double [classes.length], newProbs;
-		
-		for (int i = 0; i < numNB; i++) {
-    		//se obtienen las probabilidades del forest de NB
-//    		newProbs = forest.get(i).distributionForInstance(instance.toString(), attributes.length);
-			newProbs = forest.get(i).readInstance(instance);
-    		for (int j = 0; j < newProbs.length; j++)
-    			//se suman al contador correspondiente 
-    			sums[j] += newProbs[j];
-    		}
-		
-	    if (Utils.eq(Utils.sum(sums), 0)) {
-	    	return sums;
-	    } else {
-	    	Utils.normalize(sums);
-	    	return sums;
-	    }
-
+	/**
+	 * Method that manages the classification of an instance in the forest
+	 * @param instance
+	 * @param onb
+	 * @throws Exception
+	 */
+	public void classify(Instance instance, ONB onb) throws Exception {
+		double[] newProbs = onb.readInstance(instance);
+		for (int j = 0; j < newProbs.length; j++)
+			sums[j] += newProbs[j];
 	}
 
+	/**
+	 * Method that decides the course of an instance in the forest, if it goes to the training of an ONB or if its
+	 * classified
+	 * @param instance
+	 * @throws Exception
+	 */
 	public void readInstance(Instance instance) throws Exception {
-		if(allONBTrained())
-			classify(instance);
-		//dsps de aqui debo hacer la evaluacion
-		else
-			training(instance);
-		
-	}
-
-	private boolean allONBTrained() {
-		for(int i=0; i<numNB; i++){
-			if(forest.get(i).contEntrenamiento<minEntrenamiento)
-				return false;
-			
+		boolean flag = false;
+		for(int i=0; i< numNB; i++){
+			ONB onb = forest.get(i);
+			if(onb.ready){
+				classify(instance, onb);
+				flag=true;
+			}
+			else
+				training(instance, onb);
 		}
-		return true;
-	}
-	
-	/*
-	public double[] distributionForInstance(Instance instance) throws Exception {
+		if(flag){
+			if (!Utils.eq(Utils.sum(sums), 0))
+				Utils.normalize(sums);
 
-		double [] sums = new double [classes.length], newProbs; 
-	    
-	    for (int i = 0; i < numNB; i++) {
-    		//se obtienen las probabilidades del forest de NB
-    		newProbs = forest.get(i).distributionForInstance(instance);
-    		for (int j = 0; j < newProbs.length; j++)
-    			//se suman al contador correspondiente 
-    			sums[j] += newProbs[j];
-	    }
-	    if (instance.classAttribute().isNumeric() == true) {
-	    	sums[0] /= (double)numNB;
-	    	return sums;
-	    } else if (Utils.eq(Utils.sum(sums), 0)) {
-	    	return sums;
-	    	} else {
-	    		Utils.normalize(sums);
-	    		return sums;
-	    	}
-	    //obtengo el maximo del sums para definir cual es la clase que se clasifico
-	}*/
-	
+			total++;
+			if(Utils.maxIndex(sums)==(int) instance.classValue())
+				aciertos++;
+			matrix[Utils.maxIndex(sums)][(int) instance.classValue()]++;
+		}
+		sums = new double [classes.length];
+	}
+
+	/**
+	 * Method that initializes the confusion matrix for the evaluation
+	 * @param numClasses
+	 * @return the confusion matrix with the values equal to zero
+	 */
+	public static double[][] initializeConfusionMatrix(int numClasses) {
+		double[][] matrix = new double[numClasses][numClasses];
+		
+		for(int i=0; i<numClasses; i++){
+			for(int j=0; j<numClasses; j++)
+				matrix[i][j] = 0;
+		}
+		
+		return matrix;
+	}
 }

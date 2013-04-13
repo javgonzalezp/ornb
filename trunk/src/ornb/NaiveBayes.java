@@ -5,6 +5,8 @@ import java.util.Enumeration;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 
+import ornb_ol.Histogram;
+
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;

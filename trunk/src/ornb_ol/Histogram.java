@@ -1,6 +1,7 @@
-package ornb;
+package ornb_ol;
 
 import java.util.ArrayList;
+
 /**
  * Class that handles all the options for the histograms in the program
  * @author javgonzalez
