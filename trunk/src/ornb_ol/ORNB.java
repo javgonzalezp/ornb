@@ -56,6 +56,7 @@ public class ORNB {
 		  System.out.println("Aciertos: "+f.aciertos);
 		  System.out.println("Total: "+f.total);
 		  System.out.println("Razon: "+f.aciertos/f.total);
+		  System.out.println("Promedio Concept Drift: "+f.getMeanConceptDrift());
 		  System.out.println(printConfusionMatrix(f.matrix, classes.length, classes));
 	}
 

@@ -3,7 +3,7 @@ package ornb_ol;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import ornb_ol.ONB;
+import onb.ONB;
 
 import weka.core.Instance;
 import weka.core.Utils;
@@ -15,7 +15,7 @@ import weka.core.Utils;
  */
 public class Forest {
 	ArrayList<ONB> forest;
-	int numNB, numBins, minEntrenamiento, tamVentana;
+	int numNB, numBins, minEntrenamiento, tamVentana, t;
 	double diffEntropia, aciertos = 0, total = 0;
 	String[] classes, attributes;
 	double[][] matrix;
@@ -73,6 +73,9 @@ public class Forest {
 	 * @throws Exception
 	 */
 	public void readInstance(Instance instance) throws Exception {
+//		t++;
+//		if(t==9900)
+//			System.out.println("hola");
 		boolean flag = false;
 		for(int i=0; i< numNB; i++){
 			ONB onb = forest.get(i);
@@ -84,9 +87,14 @@ public class Forest {
 				training(instance, onb);
 		}
 		if(flag){
-			if (!Utils.eq(Utils.sum(sums), 0))
-				Utils.normalize(sums);
-
+//			if(t==9792)
+//				System.out.println("hola");
+//			if (!Utils.eq(Utils.sum(sums), 0))
+//				Utils.normalize(sums);
+//			System.out.println("TOTAL: "+t+" "+print(sums));	
+//			int aux = Utils.maxIndex(sums);
+//			int aux2 = (int) instance.classValue();
+//			System.out.println(aux +" "+aux2);
 			total++;
 			if(Utils.maxIndex(sums)==(int) instance.classValue())
 				aciertos++;
@@ -95,6 +103,13 @@ public class Forest {
 		sums = new double [classes.length];
 	}
 
+	public String print(double[] a){
+		String aux = "";
+		for(int i=0; i<a.length; i++)
+			aux = aux + a[i] + " ,";
+		
+		return aux;
+	}
 	/**
 	 * Method that initializes the confusion matrix for the evaluation
 	 * @param numClasses
@@ -109,5 +124,14 @@ public class Forest {
 		}
 		
 		return matrix;
+	}
+	
+	public double getMeanConceptDrift(){
+		double sum = 0;
+		for(int i=0; i<numNB; i++){
+			sum += forest.get(i).changes;
+		}
+		
+		return sum/numNB;
 	}
 }

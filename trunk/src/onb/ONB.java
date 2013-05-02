@@ -20,7 +20,8 @@ import weka.core.converters.ConverterUtils.DataSource;
  */
 
 public class ONB {
-	int numClasses, numAttributes, changes = 0;
+	int numClasses, numAttributes;
+	public int changes = 0;
 	double tamVentana, minEntrenamiento, contEntrenamiento=0, limite, aciertos=0, errores=0, total=0, total_instancias=0, m_ClassPriorsSum;
 	ArrayList<Histogram> histograms;
 	String[] classes, attributes;
@@ -29,6 +30,7 @@ public class ONB {
 	FileWriter writerEI, writerVI;
 	double[][] matrix;
 	Evaluation ev;
+	public boolean ready = false;
 	
 	public ONB(String[] classes, String[] attributes, double tamVentana, double minEntrenamiento, double limite) throws IOException{
 		this.numClasses = classes.length;
@@ -85,9 +87,11 @@ public class ONB {
 	 * Method that reads an instance of the dataset and decides what is the next step, if it uses it to train
 	 * the classifier or does the classification of the instance
 	 * @param instance
+	 * @return 
 	 * @throws Exception
 	 */
-	public void readInstance(Instance instance) throws Exception{
+	public double[] readInstance(Instance instance) throws Exception{
+		double[] a = null;
 		total++;
 		if(contEntrenamiento<minEntrenamiento){
 			/**
@@ -100,7 +104,7 @@ public class ONB {
 					sum[i]++;
 			}
 			contEntrenamiento++;
-			//saveToFiles(0.0, 0.0, total);
+//			saveToFiles(0.0, 0.0, total);
 
 			m_ClassPriors[(int) instance.classValue()] += instance.weight();
 	        m_ClassPriorsSum += instance.weight();
@@ -111,7 +115,8 @@ public class ONB {
 			 * not, and then reset the values  
 			 */
 			total_instancias++;
-			double[] a = distributionForInstance(instance.toString(), numAttributes);
+			ready = true;
+			a = distributionForInstance(instance.toString(), numAttributes);
 			if(instance.classValue()==(double)Utils.maxIndex(a)){
 				referencia.addHit();
 				actual.addHit();
@@ -136,7 +141,7 @@ public class ONB {
 			double entropia_referencia = referencia.getEntropia();
 			double entropia_actual = actual.getEntropia();
 			double diff = Math.abs(Math.abs(entropia_actual)-Math.abs(entropia_referencia));
-			saveToFiles(entropia_actual, actual.total, total);
+//			saveToFiles(diff, actual.total, total);
 			if(diff>limite){
 				changes++;
 				System.out.println(total);
@@ -154,8 +159,18 @@ public class ONB {
 			ev.updateNumericScores(a, instance.classValue(), instance.weight());
 			ev.setPredictions(instance, a);
 	    	matrix[Utils.maxIndex(a)][(int) instance.classValue()]++;
+//	    	System.out.println(Utils.maxIndex(a)+" "+(int) instance.classValue());
+//	    	System.out.println("TOTAL: "+total+" "+print(a));
 		}
+		return a;
+	}
+	
+	public String print(double[] a){
+		String aux = "";
+		for(int i=0; i<a.length; i++)
+			aux = aux + a[i] + " ,";
 		
+		return aux;
 	}
 	
 	/**
@@ -280,51 +295,4 @@ public class ONB {
 			retProbs[i] = sum[i]/contEntrenamiento;
 		return retProbs;
 	}
-
-	public static void main(String[] argv) throws Exception{
-		  if (argv.length != 4) {
-			  System.out.println ("Uso correcto: java -jar archivo minEntrenamiento tamVentana difEntropia");
-			  System.exit(0);
-			 }
-		  String file = argv[0];
-		  int minEntrenamiento = Integer.parseInt(argv[1]);
-		  int tamVentana = Integer.parseInt(argv[2]);
-		  double difEntropia = Double.parseDouble(argv[3]);
-   
-		  DataSource loader;
-	  	  Instances data;
-	  	
-		  loader = new DataSource(file);
-		  data = loader.getDataSet();
-			
-		  if (data.classIndex() == -1)
-			  data.setClassIndex(data.numAttributes()-1);
-
-		  String[] attributes = new String [data.numAttributes()-1];
-		  for(int i=0; i<data.numAttributes()-1; i++)
-			  attributes[i]=data.attribute(i).name();
-
-			//obtain the classes of the arff
-		  String[] classes = new String [data.numClasses()];
-		  for(int i=0; i<data.numClasses(); i++)
-			  classes[i]=data.attribute(data.numAttributes()-1).value(i);
-			
-		  ONB onb = new ONB(classes, attributes, tamVentana, minEntrenamiento, difEntropia);
-		  @SuppressWarnings("rawtypes")
-		  Enumeration enu = data.enumerateInstances();
-
-		  while (enu.hasMoreElements()) {
-			  Instance instance = (Instance) enu.nextElement();
-			  onb.readInstance(instance);
-		  }
-		  onb.writerEI.flush();
-		  onb.writerEI.close();
-		  onb.writerVI.flush();
-		  onb.writerVI.close();
-		  onb.ev.setCorrect(onb.aciertos);
-		  onb.ev.setMatrix(onb.matrix);
-		  System.out.println(onb.ev.toString());
-		  System.out.println("Total Instancias Clasificadas: "+onb.total_instancias);
-		  System.out.println("Número de cambios: "+onb.changes);
-	  }
 }
